@@ -12,5 +12,5 @@ app.get('/', function (req, res) {
 });
 
 app.listen(Number(process.env.PORT), function () {
-	console.log('Listening on Port 3000');
+	console.log('Listening on Port ' + process.env.PORT);
 });
