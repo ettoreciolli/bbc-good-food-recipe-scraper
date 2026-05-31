@@ -11,6 +11,6 @@ app.get('/', function (req, res) {
 	res.send({message: 'Welcome to the BBC Food Recipe Scraper'});
 });
 
-app.listen(3000, function () {
+app.listen(process.env.PORT, function () {
 	console.log('Listening on Port 3000');
 });
