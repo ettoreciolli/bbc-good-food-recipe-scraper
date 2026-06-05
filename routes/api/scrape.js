@@ -57,7 +57,17 @@ router.get("/", function (req, res) {
       self_url: url,
     };
 
-  request(url, function (err, response, html) {
+  var requestOptions = {
+    url: url,
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    },
+  };
+
+  request(requestOptions, function (err, response, html) {
     if (!err) {
       const $ = cheerio.load(html);
       try {
@@ -65,6 +75,10 @@ router.get("/", function (req, res) {
           console.log("Good Food");
           recipe.title = $("h1").text();
           if (!recipe.title || recipe.title.length < 1) {
+            console.error(
+              "Scrape error: no recipe title found for BBC Good Food URL:",
+              url
+            );
             return res.send({ error: "Not a valid BBC Good Food URL" });
           } else {
             $(".recipe__ingredients ul li.list-item").each(function (
@@ -105,11 +119,18 @@ router.get("/", function (req, res) {
             .map((i, el) => {
               return JSON.parse(el.children[0].data);
             })
-            .filter((i, el) => {
-              return el["@type"] === "Recipe";
-            });
-          const recipeData = schemaJSON["0"] || null;
+            .get()
+            // The recipe may sit at the top level (legacy format) or be
+            // nested inside an "@graph" array (current BBC Food format).
+            .flatMap((node) => node["@graph"] || node);
+          const recipeData =
+            schemaJSON.find((node) => node && node["@type"] === "Recipe") ||
+            null;
           if (!recipeData) {
+            console.error(
+              "Scrape error: no Recipe schema found for BBC Food URL:",
+              url
+            );
             throw new Error("Recipe not found");
           }
           recipe.title = recipeData.name;
@@ -131,12 +152,15 @@ router.get("/", function (req, res) {
           recipe.image = recipeData.image[0];
           return sendRecipeWithMatches(res, recipe);
         } else {
+          console.error("Scrape error: unsupported website for URL:", url);
           res.send({ error: "Website not yet supported" });
         }
       } catch (err) {
+        console.error("Scrape error while parsing URL:", url, "-", err);
         res.send({ error: "Invalid URI" });
       }
     } else {
+      console.error("Scrape error: request failed for URL:", url, "-", err);
       res.send({ error: "Invalid URI" });
     }
   });
