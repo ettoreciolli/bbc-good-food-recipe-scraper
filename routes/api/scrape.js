@@ -36,6 +36,7 @@ router.get("/", function (req, res) {
       try {
         if (url.match(/https:\/\/www.bbcgoodfood.com/)) {
           console.log("Good Food");
+          console.log("Good Food response:", html);
           recipe.title = $("h1").text();
           if (!recipe.title || recipe.title.length < 1) {
             return res.send({ error: "Not a valid BBC Good Food URL" });
