@@ -21,7 +21,14 @@
 			<div>
 				<h5>Ingredients</h5>
 				<ul>
-					<li ng-repeat="ingredient in json.ingredients track by $index">{{ ingredient }}</li>
+					<li ng-repeat="ingredient in json.ingredients track by $index">
+						<span class="ingredient-status"
+							ng-class="{ 'found': isIngredientFound($index), 'not-found': !isIngredientFound($index) }"
+							title="{{ isIngredientFound($index) ? 'Ingredient recognised' : 'Ingredient not recognised' }}">
+							{{ isIngredientFound($index) ? '✓' : '✗' }}
+						</span>
+						{{ ingredient }}
+					</li>
 				</ul>
 			</div>
 			<div>

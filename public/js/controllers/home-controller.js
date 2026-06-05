@@ -29,6 +29,14 @@
 				$scope.error = null;
 				$scope.recipe.url = "";
 			};
-			
+
+			// An ingredient line is considered "found" when its index is not in
+			// notFoundIngredients. Defaults to found when matching data is absent.
+			$scope.isIngredientFound = function (index) {
+				return !$scope.json ||
+					!$scope.json.notFoundIngredients ||
+					$scope.json.notFoundIngredients.indexOf(index) === -1;
+			};
+
 	  }]);
 })();
