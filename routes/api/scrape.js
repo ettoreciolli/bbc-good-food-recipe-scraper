@@ -38,6 +38,10 @@ router.get("/", function (req, res) {
           console.log("Good Food");
           recipe.title = $("h1").text();
           if (!recipe.title || recipe.title.length < 1) {
+            console.error(
+              "Scrape error: no recipe title found for BBC Good Food URL:",
+              url
+            );
             return res.send({ error: "Not a valid BBC Good Food URL" });
           } else {
             $(".recipe__ingredients ul li.list-item").each(function (
@@ -83,6 +87,10 @@ router.get("/", function (req, res) {
             });
           const recipeData = schemaJSON["0"] || null;
           if (!recipeData) {
+            console.error(
+              "Scrape error: no Recipe schema found for BBC Food URL:",
+              url
+            );
             throw new Error("Recipe not found");
           }
           recipe.title = recipeData.name;
@@ -104,12 +112,15 @@ router.get("/", function (req, res) {
           recipe.image = recipeData.image[0];
           return res.send(recipe);
         } else {
+          console.error("Scrape error: unsupported website for URL:", url);
           res.send({ error: "Website not yet supported" });
         }
       } catch (err) {
+        console.error("Scrape error while parsing URL:", url, "-", err);
         res.send({ error: "Invalid URI" });
       }
     } else {
+      console.error("Scrape error: request failed for URL:", url, "-", err);
       res.send({ error: "Invalid URI" });
     }
   });
