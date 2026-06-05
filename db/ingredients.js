@@ -9,7 +9,7 @@ var pool = require("./index");
  */
 function getIngredients() {
   return pool
-    .query("SELECT id, name, type FROM ingredient")
+    .query("SELECT id, name, ingredient_type FROM ingredient")
     .then(function (result) {
       return result.rows;
     });
