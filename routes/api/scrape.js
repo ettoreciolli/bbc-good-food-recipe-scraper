@@ -82,10 +82,13 @@ router.get("/", function (req, res) {
             .map((i, el) => {
               return JSON.parse(el.children[0].data);
             })
-            .filter((i, el) => {
-              return el["@type"] === "Recipe";
-            });
-          const recipeData = schemaJSON["0"] || null;
+            .get()
+            // The recipe may sit at the top level (legacy format) or be
+            // nested inside an "@graph" array (current BBC Food format).
+            .flatMap((node) => node["@graph"] || node);
+          const recipeData =
+            schemaJSON.find((node) => node && node["@type"] === "Recipe") ||
+            null;
           if (!recipeData) {
             console.error(
               "Scrape error: no Recipe schema found for BBC Food URL:",
@@ -109,7 +112,14 @@ router.get("/", function (req, res) {
           };
 
           recipe.serves = recipeData.recipeYield;
-          recipe.image = recipeData.image[0];
+          // "image" may be an ImageObject (current format), an array of URLs
+          // (legacy format), or a bare URL string.
+          recipe.image =
+            recipeData.image && recipeData.image.url
+              ? recipeData.image.url
+              : Array.isArray(recipeData.image)
+              ? recipeData.image[0]
+              : recipeData.image;
           return res.send(recipe);
         } else {
           console.error("Scrape error: unsupported website for URL:", url);
