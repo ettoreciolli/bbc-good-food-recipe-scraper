@@ -2,7 +2,32 @@ var express = require("express");
 var request = require("request");
 var cheerio = require("cheerio");
 var parse = require("iso8601-duration").parse;
+var getIngredients = require("../../db/ingredients").getIngredients;
+var matchIngredients = require("../../lib/matchIngredients");
 var router = express();
+
+/**
+ * Fetch the known ingredients from the database, match them against the
+ * scraped recipe ingredient lines and attach the results to the recipe before
+ * sending the response. The database access lives in db/ingredients.js and the
+ * matching logic in lib/matchIngredients.js, so the handler only orchestrates.
+ */
+function sendRecipeWithMatches(res, recipe) {
+  getIngredients()
+    .then(function (dbIngredients) {
+      var result = matchIngredients(recipe.ingredients, dbIngredients);
+      recipe.ingredientsParsed = result.ingredientsParsed;
+      recipe.notFoundIngredients = result.notFoundIngredients;
+      res.send(recipe);
+    })
+    .catch(function (err) {
+      // Don't fail the whole scrape if ingredient matching is unavailable.
+      console.error("Ingredient matching failed:", err);
+      recipe.ingredientsParsed = [];
+      recipe.notFoundIngredients = [];
+      res.send(recipe);
+    });
+}
 
 router.all("/", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -16,6 +41,8 @@ router.get("/", function (req, res) {
       title: null,
       cuisine: null,
       ingredients: [],
+      ingredientsParsed: [],
+      notFoundIngredients: [],
       method: [],
       time: {
         preparation: null,
@@ -81,7 +108,7 @@ router.get("/", function (req, res) {
               .last()
               .text();
             recipe.image = $(".post-header__image-container img").attr("src");
-            return res.send(recipe);
+            return sendRecipeWithMatches(res, recipe);
           }
         } else if (url.match(/https:\/\/www.bbc.co.uk\/food\//)) {
           console.log("BBC Food");
@@ -122,15 +149,8 @@ router.get("/", function (req, res) {
           };
 
           recipe.serves = recipeData.recipeYield;
-          // "image" may be an ImageObject (current format), an array of URLs
-          // (legacy format), or a bare URL string.
-          recipe.image =
-            recipeData.image && recipeData.image.url
-              ? recipeData.image.url
-              : Array.isArray(recipeData.image)
-              ? recipeData.image[0]
-              : recipeData.image;
-          return res.send(recipe);
+          recipe.image = recipeData.image[0];
+          return sendRecipeWithMatches(res, recipe);
         } else {
           console.error("Scrape error: unsupported website for URL:", url);
           res.send({ error: "Website not yet supported" });

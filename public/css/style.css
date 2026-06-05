@@ -43,6 +43,19 @@ p.close {
   margin-bottom: 1rem;
 }
 
+.ingredient-status {
+  display: inline-block;
+  width: 1.1em;
+  font-weight: 700;
+  text-align: center;
+}
+.ingredient-status.found {
+  color: #3adb76;
+}
+.ingredient-status.not-found {
+  color: #cc4b37;
+}
+
 #footer {
   position: fixed;
   background-color: #384d76;
