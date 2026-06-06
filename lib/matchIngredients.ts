@@ -22,25 +22,25 @@ function normalize(text: string | null | undefined): string {
 }
 
 /**
- * Find every known ingredient mentioned in a list of normalized words by
- * looking up each word window (n-gram) against the ingredient names.
+ * Find the first known ingredient mentioned in a list of normalized words by
+ * looking up each word window (n-gram) against the ingredient names. The
+ * longest, left-most matching window wins. Returns null when nothing matches.
  */
 function findMatchesInWords(
   words: string[],
   dict: Map<string, App.MatchableIngredient>,
   maxWords: number
-): App.MatchableIngredient[] {
-  const found: App.MatchableIngredient[] = [];
+): App.MatchableIngredient | null {
   for (let n = Math.min(maxWords, words.length); n >= 1; n--) {
     for (let i = 0; i + n <= words.length; i++) {
       const gram = words.slice(i, i + n).join(" ");
       const hit = dict.get(gram);
       if (hit) {
-        found.push(hit);
+        return hit;
       }
     }
   }
-  return found;
+  return null;
 }
 
 /**
@@ -92,10 +92,8 @@ export default function matchIngredients(
 
     segments.forEach((segment) => {
       const words = normalize(segment).split(" ").filter(Boolean);
-      findMatchesInWords(words, dict, maxWords).forEach((ing) => {
-        if (seen[ing.id]) {
-          return;
-        }
+      const ing = findMatchesInWords(words, dict, maxWords);
+      if (ing && !seen[ing.id]) {
         seen[ing.id] = true;
         matchedThisLine = true;
         ingredientsParsed.push({
@@ -103,7 +101,7 @@ export default function matchIngredients(
           index: index,
           name: ing.name,
         });
-      });
+      }
     });
 
     if (!matchedThisLine) {
