@@ -2,7 +2,9 @@ import pluralize from "pluralize";
 
 /**
  * Strip everything that isn't a lower-case word so that quantities, units,
- * punctuation and fractions don't interfere with matching.
+ * punctuation and fractions don't interfere with matching, then reduce each
+ * word to its singular form so plurals match their singular counterparts
+ * (e.g. "garlic cloves" -> "garlic clove").
  *
  * "400g/14oz short pasta, such as penne" -> "g oz short pasta such as penne"
  */
@@ -11,27 +13,27 @@ function normalize(text: string | null | undefined): string {
     .toLowerCase()
     .replace(/[^a-z\s]/g, " ")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim()
+    .split(" ")
+    .map((word) => (word ? pluralize.singular(word) : word))
+    .join(" ");
 }
 
 /**
- * Find the first known ingredient mentioned in a list of normalized words by
- * looking up each word window (n-gram) against the ingredient names. Each word
- * is reduced to its singular form first so plurals match their singular
- * counterparts (e.g. "garlic cloves" -> "garlic clove"). The longest, left-most
- * matching window wins. Returns null when nothing matches.
+ * Find the first known ingredient mentioned in a list of words by normalizing
+ * them (stripping quantities/units/punctuation and singularizing), then looking
+ * up each word window (n-gram) against the ingredient names. The longest,
+ * left-most matching window wins. Returns null when nothing matches.
  */
 function findMatchesInWords(
   words: string[],
   dict: Map<string, App.MatchableIngredient>,
   maxWords: number
 ): App.MatchableIngredient | null {
-  const singular = words.map((word) =>
-    word ? pluralize.singular(word) : word
-  );
-  for (let n = Math.min(maxWords, singular.length); n >= 1; n--) {
-    for (let i = 0; i + n <= singular.length; i++) {
-      const gram = singular.slice(i, i + n).join(" ");
+  const normalized = normalize(words.join(" ")).split(" ").filter(Boolean);
+  for (let n = Math.min(maxWords, normalized.length); n >= 1; n--) {
+    for (let i = 0; i + n <= normalized.length; i++) {
+      const gram = normalized.slice(i, i + n).join(" ");
       const hit = dict.get(gram);
       if (hit) {
         return hit;
@@ -89,7 +91,7 @@ export default function matchIngredients(
     let matchedThisLine = false;
 
     segments.forEach((segment) => {
-      const words = normalize(segment).split(" ").filter(Boolean);
+      const words = segment.toLowerCase().split(" ").filter(Boolean);
       const ing = findMatchesInWords(words, dict, maxWords);
       if (ing && !seen[ing.id]) {
         seen[ing.id] = true;
