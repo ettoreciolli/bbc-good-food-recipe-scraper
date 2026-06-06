@@ -33,11 +33,11 @@ function addIngredients(ingredients) {
   var rows = ingredients.map(function (ing, i) {
     var base = i * 2;
     values.push(ing.name, ing.type);
-    return "(gen_random_uuid(), $" + (base + 1) + ", $" + (base + 2) + ")";
+    return "($" + (base + 1) + ", $" + (base + 2) + ")";
   });
 
   var sql =
-    "INSERT INTO ingredient (id, name, ingredient_type) VALUES " +
+    "INSERT INTO ingredient (name, ingredient_type) VALUES " +
     rows.join(", ") +
     " RETURNING id, name, ingredient_type";
 
