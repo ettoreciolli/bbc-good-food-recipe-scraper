@@ -17,6 +17,18 @@ npm install
 npm start
 ```
 
+`npm start` compiles the TypeScript (backend to `dist/`, frontend to
+`public/js/`) and then runs the server. Other scripts:
+
+- `npm run build` &mdash; compile backend and frontend.
+- `npm run typecheck` &mdash; type-check both without emitting.
+- `npm run dev` &mdash; run the backend with `ts-node-dev` (auto-restart).
+
+The project is written in TypeScript. Backend sources live in `index.ts`,
+`routes/`, `db/` and `lib/`; the AngularJS frontend lives in `public/ts/` and
+compiles to `public/js/`. Shared types are organised under `types/`
+(`db`, `routes`, `ui`, `lib`) in a global `App` namespace.
+
 Enter the url of a BBC Good Food Recipe into the input field
 
 ### Ingredient matching
