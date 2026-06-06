@@ -27,16 +27,16 @@ function normalize(text: string | null | undefined): string {
  */
 function findMatchesInWords(
   words: string[],
-  dict: Map<string, App.MatchableIngredient[]>,
+  dict: Map<string, App.MatchableIngredient>,
   maxWords: number
 ): App.MatchableIngredient[] {
   const found: App.MatchableIngredient[] = [];
   for (let n = Math.min(maxWords, words.length); n >= 1; n--) {
     for (let i = 0; i + n <= words.length; i++) {
       const gram = words.slice(i, i + n).join(" ");
-      const hits = dict.get(gram);
-      if (hits) {
-        found.push(...hits);
+      const hit = dict.get(gram);
+      if (hit) {
+        found.push(hit);
       }
     }
   }
@@ -61,10 +61,10 @@ export default function matchIngredients(
   lines = lines || [];
   dbIngredients = dbIngredients || [];
 
-  // Build a lookup of normalized ingredient name -> list of ingredients, and
-  // track the longest name (in words) so we know how wide the n-gram windows
-  // need to be.
-  const dict = new Map<string, App.MatchableIngredient[]>();
+  // Build a lookup of normalized ingredient name -> ingredient (the first one
+  // seen for a given name wins), and track the longest name (in words) so we
+  // know how wide the n-gram windows need to be.
+  const dict = new Map<string, App.MatchableIngredient>();
   let maxWords = 1;
   dbIngredients.forEach((ing) => {
     const name = normalize(ing.name);
@@ -76,9 +76,8 @@ export default function matchIngredients(
       maxWords = wordCount;
     }
     if (!dict.has(name)) {
-      dict.set(name, []);
+      dict.set(name, { id: ing.id, name: ing.name });
     }
-    dict.get(name)!.push({ id: ing.id, name: ing.name });
   });
 
   const ingredientsParsed: App.ParsedIngredient[] = [];
