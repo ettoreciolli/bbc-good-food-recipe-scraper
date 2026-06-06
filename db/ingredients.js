@@ -15,6 +15,38 @@ function getIngredients() {
     });
 }
 
+/**
+ * Insert new ingredients into the ingredient table.
+ *
+ * @param {Array<{ name: string, type: string }>} ingredients - ingredients to
+ *   save (type must be the 'liquid' or 'solid' enum). The uuid id is generated
+ *   by the database.
+ * @returns {Promise<Array<{ id: string, name: string, type: string }>>}
+ *   Resolves with the saved rows, including their generated ids.
+ */
+function addIngredients(ingredients) {
+  if (!ingredients || !ingredients.length) {
+    return Promise.resolve([]);
+  }
+
+  var values = [];
+  var rows = ingredients.map(function (ing, i) {
+    var base = i * 2;
+    values.push(ing.name, ing.type);
+    return "(gen_random_uuid(), $" + (base + 1) + ", $" + (base + 2) + ")";
+  });
+
+  var sql =
+    "INSERT INTO ingredient (id, name, ingredient_type) VALUES " +
+    rows.join(", ") +
+    " RETURNING id, name, ingredient_type";
+
+  return pool.query(sql, values).then(function (result) {
+    return result.rows;
+  });
+}
+
 module.exports = {
   getIngredients: getIngredients,
+  addIngredients: addIngredients,
 };
