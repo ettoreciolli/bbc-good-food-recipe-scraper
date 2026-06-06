@@ -22,13 +22,37 @@ function normalize(text: string | null | undefined): string {
 }
 
 /**
+ * Find every known ingredient mentioned in a list of normalized words by
+ * looking up each word window (n-gram) against the ingredient names.
+ */
+function findMatchesInWords(
+  words: string[],
+  dict: Map<string, App.MatchableIngredient[]>,
+  maxWords: number
+): App.MatchableIngredient[] {
+  const found: App.MatchableIngredient[] = [];
+  for (let n = Math.min(maxWords, words.length); n >= 1; n--) {
+    for (let i = 0; i + n <= words.length; i++) {
+      const gram = words.slice(i, i + n).join(" ");
+      const hits = dict.get(gram);
+      if (hits) {
+        found.push(...hits);
+      }
+    }
+  }
+  return found;
+}
+
+/**
  * Match each recipe ingredient line against the known ingredients from the
  * database.
  *
- * Amounts and descriptors are ignored: each line is normalized to its words
- * and every word window (n-gram) is looked up against the ingredient names.
- * A single line can match multiple ingredients (e.g. "salt and freshly
- * ground black pepper" matches both "salt" and "black pepper").
+ * Each line is first split on the word "and" (commas are left intact) and
+ * every resulting segment is checked individually, so a line like "salt and
+ * freshly ground black pepper" is matched as "salt" and "freshly ground black
+ * pepper" separately. All matches found across the segments of a line point
+ * back to that same line index. Amounts and descriptors are ignored via
+ * normalization, and a segment can still match multiple ingredients.
  */
 export default function matchIngredients(
   lines: string[],
@@ -61,30 +85,27 @@ export default function matchIngredients(
   const notFoundIngredients: number[] = [];
 
   lines.forEach((line, index) => {
-    const words = normalize(line).split(" ").filter(Boolean);
+    // Split on the word "and" only (leave commas intact) and check each
+    // segment individually. Matches from every segment share this line index.
+    const segments = String(line == null ? "" : line).split(/\s+and\s+/i);
     const seen: { [id: string]: boolean } = {}; // dedupe by id within this line
     let matchedThisLine = false;
 
-    for (let n = Math.min(maxWords, words.length); n >= 1; n--) {
-      for (let i = 0; i + n <= words.length; i++) {
-        const gram = words.slice(i, i + n).join(" ");
-        if (!dict.has(gram)) {
-          continue;
+    segments.forEach((segment) => {
+      const words = normalize(segment).split(" ").filter(Boolean);
+      findMatchesInWords(words, dict, maxWords).forEach((ing) => {
+        if (seen[ing.id]) {
+          return;
         }
-        dict.get(gram)!.forEach((ing) => {
-          if (seen[ing.id]) {
-            return;
-          }
-          seen[ing.id] = true;
-          matchedThisLine = true;
-          ingredientsParsed.push({
-            id: ing.id,
-            index: index,
-            name: ing.name,
-          });
+        seen[ing.id] = true;
+        matchedThisLine = true;
+        ingredientsParsed.push({
+          id: ing.id,
+          index: index,
+          name: ing.name,
         });
-      }
-    }
+      });
+    });
 
     if (!matchedThisLine) {
       notFoundIngredients.push(index);
