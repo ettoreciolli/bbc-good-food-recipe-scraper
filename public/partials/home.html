@@ -30,6 +30,12 @@
 						{{ ingredient }}
 					</li>
 				</ul>
+				<button class="button alert"
+					ng-show="json.notFoundIngredients.length"
+					ng-click="openIngredientModal()">
+					{{ json.notFoundIngredients.length }}
+					ingredient{{ json.notFoundIngredients.length === 1 ? '' : 's' }} not found
+				</button>
 			</div>
 			<div>
 				<h5>Method</h5>
@@ -44,6 +50,40 @@
 					<img ng-src="{{ json.image }}" />
 				</a>
 			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Add missing ingredients modal -->
+<div class="ingredient-modal-overlay" ng-show="showIngredientModal">
+	<div class="ingredient-modal">
+		<p class="close" ng-click="closeIngredientModal()">&times;</p>
+		<h5>Add missing ingredients</h5>
+		<p>Tidy up the names below, choose a type, and save them to the database.</p>
+
+		<div class="callout alert" ng-show="ingredientModalError">
+			{{ ingredientModalError }}
+		</div>
+
+		<div class="ingredient-row" ng-repeat="ingredient in newIngredients">
+			<input type="text" ng-model="ingredient.name" placeholder="Ingredient name" />
+			<select ng-model="ingredient.type">
+				<option value="solid">Solid</option>
+				<option value="liquid">Liquid</option>
+			</select>
+		</div>
+
+		<div class="ingredient-modal-actions">
+			<button class="button"
+				ng-click="saveIngredients()"
+				ng-disabled="savingIngredients">
+				{{ savingIngredients ? 'Saving…' : 'Save ingredients' }}
+			</button>
+			<button class="button secondary"
+				ng-click="closeIngredientModal()"
+				ng-disabled="savingIngredients">
+				Cancel
+			</button>
 		</div>
 	</div>
 </div>
