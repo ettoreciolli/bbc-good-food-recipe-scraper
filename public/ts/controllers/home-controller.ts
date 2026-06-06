@@ -68,7 +68,7 @@
         ): App.NewIngredientRow {
           return {
             index: index,
-            name: json!.ingredients[index],
+            name: json!.ingredientLines[index].text,
             type: "solid",
           };
         });

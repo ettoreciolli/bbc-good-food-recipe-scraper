@@ -15,11 +15,17 @@ declare namespace App {
     total: number | null;
   }
 
+  /** A single ingredient line and the "and"-split segments it breaks into. */
+  interface IngredientLine {
+    text: string;
+    segments: string[];
+  }
+
   /** The recipe object returned by GET /api/scrape. */
   interface Recipe {
     title: string | null;
     cuisine: string | null;
-    ingredients: string[];
+    ingredientLines: IngredientLine[];
     ingredientsParsed: ParsedIngredient[];
     notFoundIngredients: number[];
     method: string[];

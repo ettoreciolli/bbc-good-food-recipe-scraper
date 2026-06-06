@@ -16,7 +16,7 @@ const router = express();
 function sendRecipeWithMatches(res: Response, recipe: App.Recipe): void {
   getIngredients()
     .then((dbIngredients) => {
-      const result = matchIngredients(recipe.ingredients, dbIngredients);
+      const result = matchIngredients(recipe.ingredientLines, dbIngredients);
       recipe.ingredientsParsed = result.ingredientsParsed;
       recipe.notFoundIngredients = result.notFoundIngredients;
       res.send(recipe);
@@ -41,7 +41,7 @@ router.get("/", (req: Request, res: Response) => {
   const recipe: App.Recipe = {
     title: null,
     cuisine: null,
-    ingredients: [],
+    ingredientLines: [],
     ingredientsParsed: [],
     notFoundIngredients: [],
     method: [],
@@ -92,11 +92,8 @@ router.get("/", (req: Request, res: Response) => {
           // Trim string up to line break where ingredient anchor description starts
           const text = $(element).text();
           const lineBreak = text.indexOf("\n");
-          if (lineBreak > 0) {
-            recipe.ingredients.push(text.substring(0, lineBreak));
-          } else {
-            recipe.ingredients.push(text);
-          }
+          const lineText = lineBreak > 0 ? text.substring(0, lineBreak) : text;
+          recipe.ingredientLines.push({ text: lineText, segments: [] });
         });
         $(".recipe__method-steps ul .list-item p").each((index, element) => {
           recipe.method.push($(element).text());
@@ -132,7 +129,9 @@ router.get("/", (req: Request, res: Response) => {
           throw new Error("Recipe not found");
         }
         recipe.title = recipeData.name;
-        recipe.ingredients = recipeData.recipeIngredient;
+        recipe.ingredientLines = (recipeData.recipeIngredient as string[]).map(
+          (text): App.IngredientLine => ({ text: text, segments: [] })
+        );
         recipe.method = recipeData.recipeInstructions;
 
         const prepTime = parse(recipeData.prepTime);
