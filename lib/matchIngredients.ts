@@ -6,6 +6,13 @@ interface NormalizedWord {
   normalized: string;
 }
 
+/** A matched ingredient together with where it sits in the original words. */
+interface WordMatch {
+  ingredient: App.MatchableIngredient;
+  letterIndex: number;
+  phraseLength: number;
+}
+
 /**
  * Strip everything that isn't a lower-case word so that quantities, units,
  * punctuation and fractions don't interfere with matching, then reduce each
@@ -41,23 +48,44 @@ function normalize(text: string | null | undefined): NormalizedWord[] {
  * Find the first known ingredient mentioned in a list of words by normalizing
  * them (stripping quantities/units/punctuation and singularizing), then looking
  * up each word window (n-gram) against the ingredient names. The longest,
- * left-most matching window wins. Returns null when nothing matches.
+ * left-most matching window wins. Returns the matched ingredient along with the
+ * letter index and length of the matched phrase within the (non-normalized)
+ * words, or null when nothing matches.
  */
 function findMatchesInWords(
   words: string[],
   dict: Map<string, App.MatchableIngredient>,
   maxWords: number
-): App.MatchableIngredient | null {
+): WordMatch | null {
   const normalized = normalize(words.join(" "));
   for (let n = Math.min(maxWords, normalized.length); n >= 1; n--) {
     for (let i = 0; i + n <= normalized.length; i++) {
-      const gram = normalized
-        .slice(i, i + n)
-        .map((word) => word.normalized)
-        .join(" ");
+      const slice = normalized.slice(i, i + n);
+      const gram = slice.map((word) => word.normalized).join(" ");
       const hit = dict.get(gram);
       if (hit) {
-        return hit;
+        const firstOriginal = slice[0].originalIndex;
+        const lastOriginal = slice[slice.length - 1].originalIndex;
+
+        // Letter index: count the non-normalized words (and the single spaces
+        // between them) before the gram's first word.
+        let letterIndex = 0;
+        for (let k = 0; k < firstOriginal; k++) {
+          letterIndex += words[k].length + 1;
+        }
+
+        // Phrase length: all the non-normalized words the gram spans, plus the
+        // spaces between them.
+        let phraseLength = lastOriginal - firstOriginal;
+        for (let k = firstOriginal; k <= lastOriginal; k++) {
+          phraseLength += words[k].length;
+        }
+
+        return {
+          ingredient: hit,
+          letterIndex: letterIndex,
+          phraseLength: phraseLength,
+        };
       }
     }
   }
@@ -114,14 +142,16 @@ export default function matchIngredients(
 
     segments.forEach((segment) => {
       const words = segment.toLowerCase().split(" ").filter(Boolean);
-      const ing = findMatchesInWords(words, dict, maxWords);
-      if (ing && !seen[ing.id]) {
-        seen[ing.id] = true;
+      const match = findMatchesInWords(words, dict, maxWords);
+      if (match && !seen[match.ingredient.id]) {
+        seen[match.ingredient.id] = true;
         matchedThisLine = true;
         ingredientsParsed.push({
-          id: ing.id,
+          id: match.ingredient.id,
           index: index,
-          name: ing.name,
+          name: match.ingredient.name,
+          letterIndex: match.letterIndex,
+          phraseLength: match.phraseLength,
         });
       }
     });

@@ -12,6 +12,10 @@ declare namespace App {
     id: string;
     index: number;
     name: string;
+    /** Character offset of the matched phrase within the segment's words. */
+    letterIndex: number;
+    /** Length of the matched phrase (non-normalized words plus spaces). */
+    phraseLength: number;
   }
 
   /** Result of matching recipe lines against the known ingredients. */
