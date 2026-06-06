@@ -93,21 +93,23 @@ function findMatchesInWords(
 }
 
 /**
- * Match each recipe ingredient line against the known ingredients from the
- * database.
+ * Match a scraped recipe's ingredient lines against the known ingredients from
+ * the database.
  *
- * Each line is first split on the word "and" (commas are left intact) and
- * every resulting segment is checked individually, so a line like "salt and
- * freshly ground black pepper" is matched as "salt" and "freshly ground black
- * pepper" separately. All matches found across the segments of a line point
- * back to that same line index. Amounts and descriptors are ignored via
- * normalization, and a segment can still match multiple ingredients.
+ * Each plain-text ingredient line is split on the word "and" (commas are left
+ * intact) into segments, and every segment is checked individually, so a line
+ * like "salt and freshly ground black pepper" is matched as "salt" and "freshly
+ * ground black pepper" separately. All matches found across the segments of a
+ * line point back to that same line index. Amounts and descriptors are ignored
+ * via normalization.
+ *
+ * Returns the built ingredientLines (text + segments) alongside the matches.
  */
 export default function matchIngredients(
-  ingredientLines: App.IngredientLine[],
+  scrapedRecipe: App.ScrapedRecipe,
   dbIngredients: App.MatchableIngredient[]
 ): App.MatchResult {
-  ingredientLines = ingredientLines || [];
+  const ingredients = (scrapedRecipe && scrapedRecipe.ingredients) || [];
   dbIngredients = dbIngredients || [];
 
   // Build a lookup of normalized ingredient name -> ingredient (the first one
@@ -130,19 +132,21 @@ export default function matchIngredients(
     }
   });
 
+  const ingredientLines: App.IngredientLine[] = [];
   const ingredientsParsed: App.ParsedIngredient[] = [];
   const notFoundIngredients: number[] = [];
 
-  ingredientLines.forEach((line, index) => {
+  ingredients.forEach((text, index) => {
     // Split on the word "and" only (leave commas intact) and check each
     // segment individually. Matches from every segment share this line index.
-    line.segments = String(line.text == null ? "" : line.text).split(
-      /\s+and\s+/i
-    );
+    const lineText = String(text == null ? "" : text);
+    const segments = lineText.split(/\s+and\s+/i);
+    ingredientLines.push({ text: lineText, segments: segments });
+
     const seen: { [id: string]: boolean } = {}; // dedupe by id within this line
     let matchedThisLine = false;
 
-    line.segments.forEach((segment, segmentIndex) => {
+    segments.forEach((segment, segmentIndex) => {
       const words = segment.toLowerCase().split(" ").filter(Boolean);
       const match = findMatchesInWords(words, dict, maxWords);
       if (match && !seen[match.ingredient.id]) {
@@ -165,6 +169,7 @@ export default function matchIngredients(
   });
 
   return {
+    ingredientLines: ingredientLines,
     ingredientsParsed: ingredientsParsed,
     notFoundIngredients: notFoundIngredients,
   };

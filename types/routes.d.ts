@@ -21,6 +21,22 @@ declare namespace App {
     segments: string[];
   }
 
+  /**
+   * The recipe as it comes straight off the page, before ingredient matching:
+   * ingredients are still plain text lines.
+   */
+  interface ScrapedRecipe {
+    title: string | null;
+    cuisine: string | null;
+    ingredients: string[];
+    method: string[];
+    time: RecipeTime;
+    serves: string | null;
+    rating: RecipeRating;
+    self_url: string;
+    image?: string;
+  }
+
   /** The recipe object returned by GET /api/scrape. */
   interface Recipe {
     title: string | null;

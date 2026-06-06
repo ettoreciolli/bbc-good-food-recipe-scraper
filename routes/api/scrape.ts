@@ -8,25 +8,52 @@ import matchIngredients from "../../lib/matchIngredients";
 const router = express();
 
 /**
- * Fetch the known ingredients from the database, match them against the
- * scraped recipe ingredient lines and attach the results to the recipe before
- * sending the response. The database access lives in db/ingredients.ts and the
- * matching logic in lib/matchIngredients.ts, so the handler only orchestrates.
+ * Assemble the final Recipe from the scraped recipe and the match result,
+ * swapping the plain-text ingredients for the matched ingredientLines.
  */
-function sendRecipeWithMatches(res: Response, recipe: App.Recipe): void {
+function buildRecipe(
+  scraped: App.ScrapedRecipe,
+  result: App.MatchResult
+): App.Recipe {
+  return {
+    title: scraped.title,
+    cuisine: scraped.cuisine,
+    ingredientLines: result.ingredientLines,
+    ingredientsParsed: result.ingredientsParsed,
+    notFoundIngredients: result.notFoundIngredients,
+    method: scraped.method,
+    time: scraped.time,
+    serves: scraped.serves,
+    rating: scraped.rating,
+    self_url: scraped.self_url,
+    image: scraped.image,
+  };
+}
+
+/**
+ * Fetch the known ingredients from the database, match them against the scraped
+ * recipe's ingredient lines and build the final Recipe (with ingredientLines in
+ * place of the plain-text ingredients) before sending the response. The
+ * database access lives in db/ingredients.ts and the matching logic in
+ * lib/matchIngredients.ts, so the handler only orchestrates.
+ */
+function sendRecipeWithMatches(res: Response, scraped: App.ScrapedRecipe): void {
   getIngredients()
     .then((dbIngredients) => {
-      const result = matchIngredients(recipe.ingredientLines, dbIngredients);
-      recipe.ingredientsParsed = result.ingredientsParsed;
-      recipe.notFoundIngredients = result.notFoundIngredients;
-      res.send(recipe);
+      res.send(buildRecipe(scraped, matchIngredients(scraped, dbIngredients)));
     })
     .catch((err) => {
-      // Don't fail the whole scrape if ingredient matching is unavailable.
+      // Don't fail the whole scrape if ingredient matching is unavailable:
+      // still build the ingredientLines, just without any matches.
       console.error("Ingredient matching failed:", err);
-      recipe.ingredientsParsed = [];
-      recipe.notFoundIngredients = [];
-      res.send(recipe);
+      const result = matchIngredients(scraped, []);
+      res.send(
+        buildRecipe(scraped, {
+          ingredientLines: result.ingredientLines,
+          ingredientsParsed: [],
+          notFoundIngredients: [],
+        })
+      );
     });
 }
 
@@ -38,12 +65,10 @@ router.all("/", (req: Request, res: Response, next: NextFunction) => {
 
 router.get("/", (req: Request, res: Response) => {
   const url = (req.query.url as string) || "";
-  const recipe: App.Recipe = {
+  const recipe: App.ScrapedRecipe = {
     title: null,
     cuisine: null,
-    ingredientLines: [],
-    ingredientsParsed: [],
-    notFoundIngredients: [],
+    ingredients: [],
     method: [],
     time: {
       preparation: null,
@@ -92,8 +117,9 @@ router.get("/", (req: Request, res: Response) => {
           // Trim string up to line break where ingredient anchor description starts
           const text = $(element).text();
           const lineBreak = text.indexOf("\n");
-          const lineText = lineBreak > 0 ? text.substring(0, lineBreak) : text;
-          recipe.ingredientLines.push({ text: lineText, segments: [] });
+          recipe.ingredients.push(
+            lineBreak > 0 ? text.substring(0, lineBreak) : text
+          );
         });
         $(".recipe__method-steps ul .list-item p").each((index, element) => {
           recipe.method.push($(element).text());
@@ -129,9 +155,7 @@ router.get("/", (req: Request, res: Response) => {
           throw new Error("Recipe not found");
         }
         recipe.title = recipeData.name;
-        recipe.ingredientLines = (recipeData.recipeIngredient as string[]).map(
-          (text): App.IngredientLine => ({ text: text, segments: [] })
-        );
+        recipe.ingredients = recipeData.recipeIngredient;
         recipe.method = recipeData.recipeInstructions;
 
         const prepTime = parse(recipeData.prepTime);
