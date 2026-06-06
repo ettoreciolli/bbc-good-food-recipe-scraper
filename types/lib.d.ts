@@ -22,6 +22,7 @@ declare namespace App {
 
   /** Result of matching recipe lines against the known ingredients. */
   interface MatchResult {
+    ingredientLines: IngredientLine[];
     ingredientsParsed: ParsedIngredient[];
     notFoundIngredients: number[];
   }
