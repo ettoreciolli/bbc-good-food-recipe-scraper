@@ -1,0 +1,20 @@
+(function () {
+  "use strict";
+  var app = angular.module("app", ["ngRoute"]);
+  app.config([
+    "$routeProvider",
+    function ($routeProvider: any) {
+      $routeProvider
+        .when("/", {
+          templateUrl: "partials/home.html",
+          controller: "homeController",
+        })
+        .when("/about", {
+          template: "<h1>About</h1>",
+        })
+        .otherwise({
+          redirectTo: "/",
+        });
+    },
+  ]);
+})();

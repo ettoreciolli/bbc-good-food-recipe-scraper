@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "none",
+    "lib": ["DOM", "ES2015"],
+    "rootDir": "public/ts",
+    "outDir": "public/js",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["angular"]
+  },
+  "include": ["public/ts/**/*.ts", "types/**/*.d.ts"],
+  "exclude": ["node_modules"]
+}
