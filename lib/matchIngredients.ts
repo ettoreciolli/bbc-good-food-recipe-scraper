@@ -104,10 +104,10 @@ function findMatchesInWords(
  * normalization, and a segment can still match multiple ingredients.
  */
 export default function matchIngredients(
-  lines: string[],
+  ingredientLines: App.IngredientLine[],
   dbIngredients: App.MatchableIngredient[]
 ): App.MatchResult {
-  lines = lines || [];
+  ingredientLines = ingredientLines || [];
   dbIngredients = dbIngredients || [];
 
   // Build a lookup of normalized ingredient name -> ingredient (the first one
@@ -133,14 +133,16 @@ export default function matchIngredients(
   const ingredientsParsed: App.ParsedIngredient[] = [];
   const notFoundIngredients: number[] = [];
 
-  lines.forEach((line, index) => {
+  ingredientLines.forEach((line, index) => {
     // Split on the word "and" only (leave commas intact) and check each
     // segment individually. Matches from every segment share this line index.
-    const segments = String(line == null ? "" : line).split(/\s+and\s+/i);
+    line.segments = String(line.text == null ? "" : line.text).split(
+      /\s+and\s+/i
+    );
     const seen: { [id: string]: boolean } = {}; // dedupe by id within this line
     let matchedThisLine = false;
 
-    segments.forEach((segment) => {
+    line.segments.forEach((segment, segmentIndex) => {
       const words = segment.toLowerCase().split(" ").filter(Boolean);
       const match = findMatchesInWords(words, dict, maxWords);
       if (match && !seen[match.ingredient.id]) {
@@ -149,6 +151,7 @@ export default function matchIngredients(
         ingredientsParsed.push({
           id: match.ingredient.id,
           index: index,
+          segmentIndex: segmentIndex,
           name: match.ingredient.name,
           letterIndex: match.letterIndex,
           phraseLength: match.phraseLength,

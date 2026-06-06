@@ -11,6 +11,8 @@ declare namespace App {
   interface ParsedIngredient {
     id: string;
     index: number;
+    /** Index of the line's "and"-split segment the match came from. */
+    segmentIndex: number;
     name: string;
     /** Character offset of the matched phrase within the segment's words. */
     letterIndex: number;
