@@ -2,11 +2,7 @@ import pluralize from "pluralize";
 
 /**
  * Strip everything that isn't a lower-case word so that quantities, units,
- * punctuation and fractions don't interfere with matching, then reduce each
- * word to its singular form so plurals match their singular counterparts
- * (e.g. "2 garlic cloves" -> "garlic clove"). The same normalization is
- * applied to both the recipe lines and the database names, so they meet in
- * the middle.
+ * punctuation and fractions don't interfere with matching.
  *
  * "400g/14oz short pasta, such as penne" -> "g oz short pasta such as penne"
  */
@@ -15,25 +11,27 @@ function normalize(text: string | null | undefined): string {
     .toLowerCase()
     .replace(/[^a-z\s]/g, " ")
     .replace(/\s+/g, " ")
-    .trim()
-    .split(" ")
-    .map((word) => (word ? pluralize.singular(word) : word))
-    .join(" ");
+    .trim();
 }
 
 /**
  * Find the first known ingredient mentioned in a list of normalized words by
- * looking up each word window (n-gram) against the ingredient names. The
- * longest, left-most matching window wins. Returns null when nothing matches.
+ * looking up each word window (n-gram) against the ingredient names. Each word
+ * is reduced to its singular form first so plurals match their singular
+ * counterparts (e.g. "garlic cloves" -> "garlic clove"). The longest, left-most
+ * matching window wins. Returns null when nothing matches.
  */
 function findMatchesInWords(
   words: string[],
   dict: Map<string, App.MatchableIngredient>,
   maxWords: number
 ): App.MatchableIngredient | null {
-  for (let n = Math.min(maxWords, words.length); n >= 1; n--) {
-    for (let i = 0; i + n <= words.length; i++) {
-      const gram = words.slice(i, i + n).join(" ");
+  const singular = words.map((word) =>
+    word ? pluralize.singular(word) : word
+  );
+  for (let n = Math.min(maxWords, singular.length); n >= 1; n--) {
+    for (let i = 0; i + n <= singular.length; i++) {
+      const gram = singular.slice(i, i + n).join(" ");
       const hit = dict.get(gram);
       if (hit) {
         return hit;
