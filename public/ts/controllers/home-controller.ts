@@ -96,6 +96,7 @@
       $location: angular.ILocationService,
       recipeStore: App.RecipeStore
     ) {
+      $scope.ingredientView = "lines";
       $scope.canSave = false;
       $scope.saving = false;
       $scope.saveError = null;

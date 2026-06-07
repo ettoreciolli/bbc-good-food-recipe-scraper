@@ -69,6 +69,45 @@ p.close {
   color: #777;
   margin-bottom: 0.4rem;
 }
+
+/* Sub-tabs within the recipe's Ingredients section. */
+.ingredient-subtabs {
+  margin-bottom: 0.6rem;
+}
+.ingredient-subtabs a {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 0.85rem;
+  color: #384d76;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+.ingredient-subtabs a.active {
+  background: #384d76;
+  color: #fff;
+  border-color: #384d76;
+}
+
+/* Parsed ingredients table. */
+.parsed-ingredients {
+  width: 100%;
+  font-size: 0.9rem;
+}
+.parsed-ingredients th {
+  text-align: left;
+  font-weight: 600;
+}
+.parsed-ingredients td {
+  vertical-align: top;
+}
+.parsed-ingredients tr.has-error td {
+  background: #fdf0ee;
+}
+.parsed-type {
+  color: #999;
+  font-size: 0.75rem;
+}
 /* Red "!" shown next to an "and"-segment that matched no known ingredient. */
 .segment-flag {
   color: #cc4b37;

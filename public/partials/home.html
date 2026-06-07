@@ -20,6 +20,16 @@
 		<div class="large-6 columns">
 			<div>
 				<h5>Ingredients</h5>
+
+				<nav class="ingredient-subtabs">
+					<a href="" ng-class="{ active: ingredientView === 'lines' }"
+						ng-click="ingredientView = 'lines'">Lines</a>
+					<a href="" ng-class="{ active: ingredientView === 'parsed' }"
+						ng-click="ingredientView = 'parsed'">Parsed</a>
+				</nav>
+
+				<!-- Lines view -->
+				<div ng-show="ingredientView === 'lines'">
 				<p class="ingredient-key">Underlined words are recognised ingredients.</p>
 				<ul class="ingredient-list">
 					<li ng-repeat="line in ingredientDisplay track by line.index"><span
@@ -34,6 +44,36 @@
 							ng-show="seg.error"
 							title="{{ seg.error }}">⚠ {{ seg.error }}</span><span ng-show="!$last"> and </span></span></li>
 				</ul>
+				</div>
+
+				<!-- Parsed view: matched ingredients with amount + unit -->
+				<div ng-show="ingredientView === 'parsed'">
+					<p class="ingredient-key" ng-hide="json.ingredientsParsed.length">
+						No ingredients matched the database yet.
+					</p>
+					<table class="parsed-ingredients" ng-show="json.ingredientsParsed.length">
+						<thead>
+							<tr>
+								<th>Amount</th>
+								<th>Unit</th>
+								<th>Ingredient</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="p in json.ingredientsParsed track by $index"
+								ng-class="{ 'has-error': p.parseError }">
+								<td>{{ p.amount || '—' }}</td>
+								<td>{{ p.unit || '—' }}</td>
+								<td>
+									{{ p.name }}
+									<span class="parsed-type">({{ p.type }})</span>
+									<div class="segment-error" ng-show="p.parseError">⚠ {{ p.parseError }}</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
 				<a class="button alert"
 					ng-show="json.notFoundIngredients.length"
 					href="#/ingredients">

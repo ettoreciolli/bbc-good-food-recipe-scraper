@@ -66,6 +66,8 @@ declare namespace App {
     json?: Recipe;
     error?: string | null;
     ingredientDisplay?: IngredientDisplayLine[];
+    /** Which ingredient sub-tab is shown: "lines" or "parsed". */
+    ingredientView: string;
 
     getRecipe(): void;
     closeError(): void;
