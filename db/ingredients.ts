@@ -1,12 +1,12 @@
-import pool from "./index";
+import { query } from "./index";
 
 /**
  * Fetch every row from the ingredient table.
  */
 export function getIngredients(): Promise<App.IngredientRow[]> {
-  return pool
-    .query("SELECT id, name, ingredient_type FROM ingredient")
-    .then((result) => result.rows as App.IngredientRow[]);
+  return query<App.IngredientRow>(
+    "SELECT id, name, ingredient_type FROM ingredient"
+  );
 }
 
 /**
@@ -44,7 +44,5 @@ export function addIngredients(
     rows.join(", ") +
     " RETURNING id, name, ingredient_type, slug";
 
-  return pool
-    .query(sql, values)
-    .then((result) => result.rows as App.SavedIngredient[]);
+  return query<App.SavedIngredient>(sql, values);
 }
