@@ -1,0 +1,89 @@
+<div class="ingredients-tab">
+	<h4>Ingredients</h4>
+
+	<!-- Add new ingredients -->
+	<section class="ingredients-section">
+		<h5>Add ingredients</h5>
+		<p ng-show="notFoundSegments.length">
+			{{ notFoundSegments.length }} ingredient{{ notFoundSegments.length === 1 ? '' : 's' }}
+			from your recipe weren't recognised.
+			<a href="" ng-click="fillFromRecipe()">Fill the form with them</a>.
+		</p>
+		<p ng-hide="recipe">
+			Scrape a recipe on the <a href="#/">Recipe tab</a> to pull in its
+			ingredients, or just add your own below.
+		</p>
+
+		<div class="callout alert" ng-show="addError">{{ addError }}</div>
+
+		<div class="ingredient-row" ng-repeat="row in newRows track by $index">
+			<input type="text" ng-model="row.name" placeholder="Ingredient name" />
+			<select ng-model="row.type">
+				<option value="solid">Solid</option>
+				<option value="liquid">Liquid</option>
+			</select>
+			<button class="button secondary"
+				ng-click="splitRow($index)"
+				title="Split this row on 'and', '&' or commas">Split</button>
+			<button class="button secondary" ng-click="removeRow($index)">&times;</button>
+		</div>
+
+		<div class="ingredients-actions">
+			<button class="button hollow" ng-click="addRow()">Add row</button>
+			<button class="button" ng-click="saveNew()" ng-disabled="saving">
+				{{ saving ? 'Saving…' : 'Save to database' }}
+			</button>
+		</div>
+	</section>
+
+	<!-- Existing ingredients -->
+	<section class="ingredients-section">
+		<h5>In the database</h5>
+		<div class="callout alert" ng-show="loadError">{{ loadError }}</div>
+		<p ng-show="loading">Loading…</p>
+		<p ng-hide="loading || dbIngredients.length || loadError">
+			No ingredients saved yet.
+		</p>
+
+		<ul class="db-ingredient-list" ng-hide="loading">
+			<li ng-repeat="ing in dbIngredients track by ing.id">
+				<span class="db-ingredient-name">{{ ing.name }}</span>
+				<span class="db-ingredient-type">{{ ing.ingredient_type }}</span>
+				<span class="db-ingredient-actions">
+					<a href="" ng-click="beginSplit(ing)">Split</a>
+					<a href="" ng-click="removeDbIngredient(ing)">Delete</a>
+				</span>
+			</li>
+		</ul>
+	</section>
+
+	<!-- Split a saved ingredient -->
+	<div class="ingredient-modal-overlay" ng-show="splitTarget">
+		<div class="ingredient-modal">
+			<p class="close" ng-click="cancelSplit()">&times;</p>
+			<h5>Split &ldquo;{{ splitTarget.name }}&rdquo;</h5>
+			<p>Replace it with the ingredients below.</p>
+
+			<div class="callout alert" ng-show="splitError">{{ splitError }}</div>
+
+			<div class="ingredient-row" ng-repeat="row in splitRows track by $index">
+				<input type="text" ng-model="row.name" placeholder="Ingredient name" />
+				<select ng-model="row.type">
+					<option value="solid">Solid</option>
+					<option value="liquid">Liquid</option>
+				</select>
+				<button class="button secondary" ng-click="removeSplitRow($index)">&times;</button>
+			</div>
+
+			<div class="ingredient-modal-actions">
+				<button class="button hollow" ng-click="addSplitRow()">Add row</button>
+				<button class="button" ng-click="confirmSplit()" ng-disabled="splitting">
+					{{ splitting ? 'Splitting…' : 'Split ingredient' }}
+				</button>
+				<button class="button secondary" ng-click="cancelSplit()" ng-disabled="splitting">
+					Cancel
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
