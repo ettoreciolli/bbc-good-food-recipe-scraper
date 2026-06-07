@@ -1,16 +1,32 @@
-import { Pool } from "pg";
+import { neon, NeonQueryFunction } from "@neondatabase/serverless";
 
 /**
- * Shared Postgres connection pool. The connection details are taken from the
- * DATABASE_URL environment variable. The pool is lazy: it does not open a
- * connection until the first query is run.
+ * Lazily-created Neon serverless SQL client. The connection details are taken
+ * from the DATABASE_URL environment variable. Like the previous pg pool, the
+ * client is created on first use, so importing this module never fails just
+ * because the database is unconfigured — a missing or bad connection only
+ * surfaces as a rejected promise when a query actually runs.
  */
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+let client: NeonQueryFunction<false, false> | null = null;
 
-pool.on("error", (err: Error) => {
-  console.error("Unexpected error on idle Postgres client:", err);
-});
+function getClient(): NeonQueryFunction<false, false> {
+  if (!client) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error("DATABASE_URL is not set");
+    }
+    client = neon(connectionString);
+  }
+  return client;
+}
 
-export default pool;
+/**
+ * Run a parameterized SQL query over HTTP and resolve with the result rows.
+ * Wrapping getClient() in a promise means a missing DATABASE_URL becomes a
+ * rejection (which callers already handle) rather than a synchronous throw.
+ */
+export function query<T>(text: string, params?: unknown[]): Promise<T[]> {
+  return Promise.resolve().then(
+    () => getClient().query(text, params) as Promise<T[]>
+  );
+}

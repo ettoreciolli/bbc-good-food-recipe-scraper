@@ -43,9 +43,12 @@ the following shape:
 | name   | text                       |
 | type   | enum (`liquid` / `solid`)  |
 
-Set the connection string via the `DATABASE_URL` environment variable. If the
-database is unavailable the scraper still returns the recipe, just without
-ingredient matches. The API response includes:
+The database is accessed through the [Neon serverless
+driver](https://github.com/neondatabase/serverless) (`@neondatabase/serverless`),
+which queries Postgres over HTTP. Set the connection string via the
+`DATABASE_URL` environment variable. If the database is unavailable the scraper
+still returns the recipe, just without ingredient matches. The API response
+includes:
 
 - `ingredientsParsed` &mdash; one entry per matched ingredient: `{ id, index, name }`,
   where `index` is the ingredient line the match came from (a line can match
