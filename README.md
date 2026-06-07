@@ -50,10 +50,33 @@ which queries Postgres over HTTP. Set the connection string via the
 still returns the recipe, just without ingredient matches. The API response
 includes:
 
-- `ingredientsParsed` &mdash; one entry per matched ingredient: `{ id, index, name }`,
+- `ingredientsParsed` &mdash; one entry per matched ingredient segment:
+  `{ id, index, segmentIndex, name, type, amount, unit, parseError, ... }`,
   where `index` is the ingredient line the match came from (a line can match
-  more than one ingredient).
+  more than one ingredient) and `amount`/`unit` are parsed from the text before
+  the matched name. `parseError` is set when the amount/unit can't be parsed
+  cleanly (e.g. a liquid unit on a solid ingredient).
 - `notFoundIngredients` &mdash; the indexes of the ingredient lines that matched
   nothing.
+
+### Saving parsed recipes
+
+A scraped recipe can be persisted once it is **settled** &mdash; every line is
+matched to a known ingredient and no line has an amount/unit parse error. The
+recipe view's "Save recipe" button is enabled only then, and `POST /api/recipes`
+re-validates server-side before writing.
+
+Two tables hold the saved data (create them with
+[`db/schema.sql`](db/schema.sql)):
+
+- `parsed_recipes` &mdash; `id`, `url` (unique), `title`, `created_at`. One row
+  per recipe, upserted by url.
+- `recipe_ingredients` &mdash; `id`, `recipe_id`, `ingredient_id`, `line_index`,
+  `segment_index`, `unit`, `quantity`. One row per matched ingredient segment.
+
+Amounts and units are parsed by `lib/parseMeasurement.ts`, which handles
+decimals, fractions (`1/2`, `½`), ranges (`2-3`) and dual units (`400g/14oz`,
+keeping the first). Units are categorised as solid, liquid or shared
+(spoons/cups), and a unit must be valid for its ingredient's type.
 
 ##### See it in action - [https://bbc-food-scraper.glitch.me](https://bbc-food-scraper.glitch.me)

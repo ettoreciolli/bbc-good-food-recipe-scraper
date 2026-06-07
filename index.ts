@@ -2,6 +2,7 @@ import path from "path";
 import express, { Request, Response } from "express";
 import scrapeRouter from "./routes/api/scrape";
 import ingredientsRouter from "./routes/api/ingredients";
+import recipesRouter from "./routes/api/recipes";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.static(publicDir));
 
 app.use("/api/scrape", scrapeRouter);
 app.use("/api/ingredients", ingredientsRouter);
+app.use("/api/recipes", recipesRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send({ message: "Welcome to the BBC Food Recipe Scraper" });

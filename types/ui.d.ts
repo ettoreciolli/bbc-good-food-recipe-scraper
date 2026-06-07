@@ -29,6 +29,8 @@ declare namespace App {
     parts: IngredientPart[];
     /** True when some ingredient was matched within this segment. */
     matched: boolean;
+    /** Amount/unit parse error for this segment, if any. */
+    error?: string | null;
   }
 
   /** A whole ingredient line, broken into segments for display. */
@@ -56,6 +58,14 @@ declare namespace App {
     closeError(): void;
     /** Open the ingredients tab focused on a matched ingredient. */
     openIngredient(part: IngredientPart): void;
+
+    // Saving the settled recipe to the database.
+    /** True when every line is matched and free of amount/unit errors. */
+    canSave: boolean;
+    saving: boolean;
+    saveError: string | null;
+    saveMessage: string | null;
+    saveRecipe(): void;
   }
 
   /** Scope used by the ingredients (manage) controller. */

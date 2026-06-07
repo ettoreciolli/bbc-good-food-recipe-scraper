@@ -57,11 +57,32 @@
         if (after) {
           parts.push({ text: after, matched: false });
         }
-        return { parts: parts, matched: true };
+        return {
+          parts: parts,
+          matched: true,
+          error: match.parseError || null,
+        };
       });
 
       return { index: index, segments: displaySegments };
     });
+  }
+
+  /**
+   * A recipe is "settled" (and so saveable) once every line matched a known
+   * ingredient and none of the matches have an amount/unit parse error.
+   */
+  function isSettled(recipe: App.Recipe): boolean {
+    if (recipe.notFoundIngredients && recipe.notFoundIngredients.length) {
+      return false;
+    }
+    var parsed = recipe.ingredientsParsed || [];
+    for (var i = 0; i < parsed.length; i++) {
+      if (parsed[i].parseError) {
+        return false;
+      }
+    }
+    return true;
   }
 
   angular.module("app").controller("homeController", [
@@ -75,12 +96,26 @@
       $location: angular.ILocationService,
       recipeStore: App.RecipeStore
     ) {
+      $scope.canSave = false;
+      $scope.saving = false;
+      $scope.saveError = null;
+      $scope.saveMessage = null;
+
+      // Show a recipe: build its display model and work out whether it's
+      // settled enough to save.
+      function applyRecipe(data: App.Recipe) {
+        $scope.json = data;
+        $scope.ingredientDisplay = buildIngredientDisplay(data);
+        $scope.canSave = isSettled(data);
+        $scope.saveError = null;
+        $scope.saveMessage = null;
+      }
+
       // Restore a previously scraped recipe (e.g. after visiting the
       // ingredients tab and coming back) from the shared store.
       var existing = recipeStore.getRecipe();
       if (existing) {
-        $scope.json = existing;
-        $scope.ingredientDisplay = buildIngredientDisplay(existing);
+        applyRecipe(existing);
       }
 
       $scope.getRecipe = function () {
@@ -99,8 +134,7 @@
             return;
           }
 
-          $scope.json = data;
-          $scope.ingredientDisplay = buildIngredientDisplay(data);
+          applyRecipe(data);
           recipeStore.setRecipe(data);
           if ($scope.recipe) {
             $scope.recipe.url = "";
@@ -122,6 +156,56 @@
           return;
         }
         $location.path("/ingredients").search({ ingredient: part.id });
+      };
+
+      // Persist the settled recipe and its parsed ingredient rows.
+      $scope.saveRecipe = function () {
+        var json = $scope.json;
+        if (!json || !$scope.canSave) {
+          return;
+        }
+
+        $scope.saving = true;
+        $scope.saveError = null;
+        $scope.saveMessage = null;
+
+        var body: App.SaveRecipeBody = {
+          url: json.self_url,
+          title: json.title,
+          ingredients: (json.ingredientsParsed || []).map(function (
+            parsed
+          ): App.SaveRecipeIngredient {
+            return {
+              ingredient_id: parsed.id,
+              line_index: parsed.index,
+              segment_index: parsed.segmentIndex,
+              unit: parsed.unit != null ? parsed.unit : null,
+              quantity: parsed.amount != null ? parsed.amount : null,
+            };
+          }),
+        };
+
+        $http.post("/api/recipes", body).then(
+          function (response) {
+            $scope.saving = false;
+            var data = response.data as App.SaveRecipeResponse &
+              App.ErrorResponse;
+            if (data.error) {
+              $scope.saveError = data.error;
+              return;
+            }
+            $scope.saveMessage =
+              "Saved " +
+              data.saved +
+              " ingredient" +
+              (data.saved === 1 ? "" : "s") +
+              " for this recipe.";
+          },
+          function () {
+            $scope.saving = false;
+            $scope.saveError = "Something went wrong saving the recipe.";
+          }
+        );
       };
     },
   ]);

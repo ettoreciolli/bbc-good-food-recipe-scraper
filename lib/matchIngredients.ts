@@ -128,7 +128,7 @@ export default function matchIngredients(
       maxWords = wordCount;
     }
     if (!dict.has(name)) {
-      dict.set(name, { id: ing.id, name: ing.name });
+      dict.set(name, { id: ing.id, name: ing.name, type: ing.type });
     }
   });
 
@@ -157,6 +157,7 @@ export default function matchIngredients(
           index: index,
           segmentIndex: segmentIndex,
           name: match.ingredient.name,
+          type: match.ingredient.type,
           letterIndex: match.letterIndex,
           phraseLength: match.phraseLength,
         });

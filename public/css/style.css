@@ -76,6 +76,22 @@ p.close {
   margin-left: 4px;
   cursor: default;
 }
+/* Amount/unit parse error next to a matched segment. */
+.segment-error {
+  color: #cc4b37;
+  font-size: 0.8rem;
+  margin-left: 6px;
+}
+
+/* Save settled recipe. */
+.save-recipe {
+  margin-top: 1rem;
+}
+.save-hint {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 0.3rem;
+}
 
 /* Tab navigation. */
 .app-tabs {

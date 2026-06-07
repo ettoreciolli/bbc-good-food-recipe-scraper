@@ -29,7 +29,10 @@
 							ng-click="openIngredient(part)">{{ part.text }}</span><span
 							class="segment-flag"
 							ng-show="!seg.matched"
-							title="Ingredient not recognised">!</span><span ng-show="!$last"> and </span></span></li>
+							title="Ingredient not recognised">!</span><span
+							class="segment-error"
+							ng-show="seg.error"
+							title="{{ seg.error }}">⚠ {{ seg.error }}</span><span ng-show="!$last"> and </span></span></li>
 				</ul>
 				<a class="button alert"
 					ng-show="json.notFoundIngredients.length"
@@ -37,6 +40,19 @@
 					{{ json.notFoundIngredients.length }}
 					ingredient{{ json.notFoundIngredients.length === 1 ? '' : 's' }} not found — add them
 				</a>
+
+				<div class="save-recipe">
+					<button class="button success"
+						ng-click="saveRecipe()"
+						ng-disabled="!canSave || saving">
+						{{ saving ? 'Saving…' : 'Save recipe to database' }}
+					</button>
+					<p class="save-hint" ng-hide="canSave">
+						Resolve every ingredient (no red <b>!</b> or <b>⚠</b>) before saving.
+					</p>
+					<div class="callout success" ng-show="saveMessage">{{ saveMessage }}</div>
+					<div class="callout alert" ng-show="saveError">{{ saveError }}</div>
+				</div>
 			</div>
 			<div>
 				<h5>Method</h5>

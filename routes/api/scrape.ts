@@ -4,8 +4,37 @@ import cheerio from "cheerio";
 import { parse } from "iso8601-duration";
 import { getIngredients } from "../../db/ingredients";
 import matchIngredients from "../../lib/matchIngredients";
+import parseMeasurement from "../../lib/parseMeasurement";
 
 const router = express();
+
+/** Map DB ingredient rows into the shape the matcher works with. */
+function toMatchable(
+  rows: App.IngredientRow[]
+): App.MatchableIngredient[] {
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    type: row.ingredient_type,
+  }));
+}
+
+/**
+ * Fill in the parsed amount/unit (and any parse error) for each matched
+ * ingredient, reading the segment text that sits before the matched name.
+ */
+function enrichMeasurements(result: App.MatchResult): App.MatchResult {
+  result.ingredientsParsed.forEach((parsed) => {
+    const line = result.ingredientLines[parsed.index];
+    const segment = (line && line.segments[parsed.segmentIndex]) || "";
+    const prefix = segment.substring(0, parsed.letterIndex);
+    const measurement = parseMeasurement(prefix, parsed.type);
+    parsed.amount = measurement.quantity;
+    parsed.unit = measurement.unit;
+    parsed.parseError = measurement.error;
+  });
+  return result;
+}
 
 /**
  * Assemble the final Recipe from the scraped recipe and the match result,
@@ -40,7 +69,10 @@ function buildRecipe(
 function sendRecipeWithMatches(res: Response, scraped: App.ScrapedRecipe): void {
   getIngredients()
     .then((dbIngredients) => {
-      res.send(buildRecipe(scraped, matchIngredients(scraped, dbIngredients)));
+      const result = enrichMeasurements(
+        matchIngredients(scraped, toMatchable(dbIngredients))
+      );
+      res.send(buildRecipe(scraped, result));
     })
     .catch((err) => {
       // Don't fail the whole scrape if ingredient matching is unavailable:

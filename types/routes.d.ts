@@ -81,4 +81,26 @@ declare namespace App {
   interface DeleteIngredientResponse {
     deleted: string;
   }
+
+  /** One settled ingredient segment in a save-recipe request. */
+  interface SaveRecipeIngredient {
+    ingredient_id: string;
+    line_index: number;
+    segment_index: number;
+    unit: string | null;
+    quantity: string | null;
+  }
+
+  /** Body for POST /api/recipes. */
+  interface SaveRecipeBody {
+    url: string;
+    title?: string | null;
+    ingredients: SaveRecipeIngredient[];
+  }
+
+  /** Response for POST /api/recipes. */
+  interface SaveRecipeResponse {
+    recipe_id: string;
+    saved: number;
+  }
 }
