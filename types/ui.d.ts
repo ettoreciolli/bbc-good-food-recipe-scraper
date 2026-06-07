@@ -60,8 +60,50 @@ declare namespace App {
     type: IngredientType;
   }
 
+  /** Shared authentication state + actions (wraps the Better Auth endpoints). */
+  interface AuthService {
+    user: AuthUser | null;
+    loadSession(): angular.IPromise<AuthUser | null>;
+    signUp(
+      name: string,
+      email: string,
+      password: string
+    ): angular.IPromise<AuthUser | null>;
+    signIn(email: string, password: string): angular.IPromise<AuthUser | null>;
+    signOut(): angular.IPromise<void>;
+  }
+
+  /** Scope used by the account controller. */
+  interface AccountScope extends angular.IScope {
+    auth: AuthService;
+    signinForm: { email: string; password: string };
+    signupForm: { name: string; email: string; password: string };
+    authError: string | null;
+    authBusy: boolean;
+    signIn(): void;
+    signUp(): void;
+    signOut(): void;
+
+    favorites: FavoriteRecipeRow[];
+    favError: string | null;
+    loadFavorite(fav: FavoriteRecipeRow): void;
+    removeFavorite(fav: FavoriteRecipeRow): void;
+
+    inventory: InventoryItemRow[];
+    invError: string | null;
+    dbIngredients: IngredientRow[];
+    newInv: { ingredient_id: string; quantity: string; unit: string };
+    addInventory(): void;
+    removeInventory(item: InventoryItemRow): void;
+  }
+
   /** Scope used by the home (scrape) controller. */
   interface HomeScope extends angular.IScope {
+    auth?: AuthService;
+    favoriting?: boolean;
+    favError?: string | null;
+    favMessage?: string | null;
+    favoriteRecipe(): void;
     recipe?: { url: string };
     json?: Recipe;
     error?: string | null;

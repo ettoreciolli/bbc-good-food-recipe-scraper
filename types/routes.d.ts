@@ -119,4 +119,34 @@ declare namespace App {
   interface ListRecipesResponse {
     recipes: ParsedRecipeRow[];
   }
+
+  /** Body for POST /api/favorites (auto-saves the recipe if needed). */
+  interface AddFavoriteBody {
+    url: string;
+    title?: string | null;
+  }
+
+  /** Response for GET /api/favorites. */
+  interface FavoritesResponse {
+    favorites: FavoriteRecipeRow[];
+  }
+
+  /** Response for GET /api/inventory. */
+  interface InventoryResponse {
+    items: InventoryItemRow[];
+  }
+
+  /** Body for POST /api/inventory (add/update an inventory item). */
+  interface SetInventoryBody {
+    ingredient_id: string;
+    quantity?: string | null;
+    unit?: string | null;
+  }
+
+  /** The signed-in user (subset of the Better Auth user), or null. */
+  interface AuthUser {
+    id: string;
+    name: string;
+    email: string;
+  }
 }

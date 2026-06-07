@@ -11,6 +11,13 @@
 </div>
 <div ng-show="json">
 	<h4>{{ json.title }}</h4>
+	<div class="favorite-bar" ng-show="auth.user">
+		<button class="button tiny" ng-click="favoriteRecipe()" ng-disabled="favoriting">
+			{{ favoriting ? 'Saving…' : '♥ Favorite' }}
+		</button>
+		<span class="favorite-msg" ng-show="favMessage">{{ favMessage }}</span>
+		<span class="favorite-msg error" ng-show="favError">{{ favError }}</span>
+	</div>
   <div class="recipe-info">
     <p>Servings: <b>{{ json.serves }}</b></p>
     <p>Preparation Time: <b>{{ json.time.prep }}</b></p>

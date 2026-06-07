@@ -34,4 +34,23 @@ declare namespace App {
     created_at: string;
     ingredient_count: number;
   }
+
+  /** A user's favorited recipe, joined with the recipe details. */
+  interface FavoriteRecipeRow {
+    recipe_id: string;
+    url: string;
+    title: string | null;
+    created_at: string;
+    ingredient_count: number;
+  }
+
+  /** A kitchen inventory item, joined with the ingredient it references. */
+  interface InventoryItemRow {
+    id: string;
+    ingredient_id: string;
+    name: string;
+    ingredient_type: IngredientType;
+    quantity: string | null;
+    unit: string | null;
+  }
 }

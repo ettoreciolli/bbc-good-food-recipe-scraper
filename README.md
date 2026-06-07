@@ -79,4 +79,29 @@ decimals, fractions (`1/2`, `½`), ranges (`2-3`) and dual units (`400g/14oz`,
 keeping the first). Units are categorised as solid, liquid or shared
 (spoons/cups), and a unit must be valid for its ingredient's type.
 
+### Accounts (Better Auth)
+
+Accounts are **optional**. Authentication is handled by
+[Better Auth](https://www.better-auth.com/) mounted in Express at
+`/api/auth/*`, using email + password (email verification is off, so accounts
+work immediately). It shares the same Neon Postgres database. Signing in unlocks
+two per-user features on the **Account** tab:
+
+- **Favorites** &mdash; the ♥ button on the recipe view favorites the current
+  recipe (creating its `parsed_recipes` row by url if needed).
+  `GET/POST /api/favorites`, `DELETE /api/favorites/:recipeId`.
+- **Kitchen inventory** &mdash; ingredients you have on hand, each linked to the
+  `ingredient` table with an amount + unit (validated against the ingredient's
+  type). `GET/POST /api/inventory`, `DELETE /api/inventory/:ingredientId`.
+
+Set these environment variables:
+
+- `BETTER_AUTH_SECRET` &mdash; a long random string (`openssl rand -base64 32`).
+- `BETTER_AUTH_URL` &mdash; the app's base URL, e.g. `http://localhost:3000`.
+
+The auth tables (`user`, `session`, `account`, `verification`) and the
+`favorites` / `inventory` tables are created by
+[`db/schema.sql`](db/schema.sql). The auth columns are camelCase to match what
+Better Auth queries (equivalent to `npx @better-auth/cli generate`).
+
 ##### See it in action - [https://bbc-food-scraper.glitch.me](https://bbc-food-scraper.glitch.me)

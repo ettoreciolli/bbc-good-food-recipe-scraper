@@ -90,12 +90,20 @@
     "$http",
     "$location",
     "recipeStore",
+    "authService",
     function (
       $scope: App.HomeScope,
       $http: angular.IHttpService,
       $location: angular.ILocationService,
-      recipeStore: App.RecipeStore
+      recipeStore: App.RecipeStore,
+      authService: App.AuthService
     ) {
+      // Expose auth so the view can show the favorite button when signed in.
+      $scope.auth = authService;
+      authService.loadSession();
+      $scope.favoriting = false;
+      $scope.favError = null;
+      $scope.favMessage = null;
       $scope.ingredientView = "lines";
       $scope.canSave = false;
       $scope.saving = false;
@@ -156,6 +164,34 @@
           applyRecipe(existing);
         }
       }
+
+      // Favorite the current recipe (auto-saves it by url server-side).
+      $scope.favoriteRecipe = function () {
+        var json = $scope.json;
+        if (!json || !authService.user) {
+          return;
+        }
+        $scope.favoriting = true;
+        $scope.favError = null;
+        $scope.favMessage = null;
+        $http
+          .post("/api/favorites", { url: json.self_url, title: json.title })
+          .then(
+            function (response) {
+              $scope.favoriting = false;
+              var data = response.data as App.ErrorResponse;
+              if (data.error) {
+                $scope.favError = data.error;
+                return;
+              }
+              $scope.favMessage = "Added to your favorites.";
+            },
+            function () {
+              $scope.favoriting = false;
+              $scope.favError = "Couldn't favorite this recipe.";
+            }
+          );
+      };
 
       // Clicking a recognised (underlined) ingredient jumps to the ingredients
       // tab with that ingredient pinned to the top of the list.

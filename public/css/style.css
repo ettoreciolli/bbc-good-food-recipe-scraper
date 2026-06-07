@@ -266,6 +266,24 @@ p.close {
   margin-right: 8px;
 }
 
+/* Favorite button on the recipe view. */
+.favorite-bar {
+  margin-bottom: 1rem;
+}
+.favorite-msg {
+  margin-left: 8px;
+  font-size: 0.8rem;
+  color: #3a7d44;
+}
+.favorite-msg.error {
+  color: #cc4b37;
+}
+
+/* Account tab. */
+.account-section {
+  margin-bottom: 2rem;
+}
+
 /* Browse (saved recipes) tab. */
 .saved-recipe-list {
   list-style: none;

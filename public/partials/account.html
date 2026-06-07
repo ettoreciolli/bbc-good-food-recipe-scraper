@@ -1,0 +1,98 @@
+<div class="account-tab">
+	<h4>Account</h4>
+
+	<!-- Signed out: sign in / sign up -->
+	<div ng-hide="auth.user">
+		<p>Creating an account is optional. Sign in to favorite recipes and keep a kitchen inventory.</p>
+
+		<div class="callout alert" ng-show="authError">{{ authError }}</div>
+
+		<div class="row">
+			<div class="large-6 columns">
+				<h5>Sign in</h5>
+				<label>Email
+					<input type="email" ng-model="signinForm.email" />
+				</label>
+				<label>Password
+					<input type="password" ng-model="signinForm.password" />
+				</label>
+				<button class="button" ng-click="signIn()" ng-disabled="authBusy">
+					{{ authBusy ? 'Please wait…' : 'Sign in' }}
+				</button>
+			</div>
+			<div class="large-6 columns">
+				<h5>Create account</h5>
+				<label>Name
+					<input type="text" ng-model="signupForm.name" />
+				</label>
+				<label>Email
+					<input type="email" ng-model="signupForm.email" />
+				</label>
+				<label>Password
+					<input type="password" ng-model="signupForm.password" />
+				</label>
+				<button class="button" ng-click="signUp()" ng-disabled="authBusy">
+					{{ authBusy ? 'Please wait…' : 'Create account' }}
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Signed in: favorites + inventory -->
+	<div ng-show="auth.user">
+		<p>
+			Signed in as <b>{{ auth.user.name }}</b> ({{ auth.user.email }})
+			<a href="" ng-click="signOut()">Sign out</a>
+		</p>
+
+		<section class="account-section">
+			<h5>Favorite recipes</h5>
+			<div class="callout alert" ng-show="favError">{{ favError }}</div>
+			<p ng-hide="favorites.length || favError">No favorites yet. Open a recipe and tap “Favorite”.</p>
+			<ul class="saved-recipe-list">
+				<li ng-repeat="fav in favorites track by fav.recipe_id">
+					<div class="saved-recipe-info">
+						<span class="saved-recipe-title">{{ fav.title || fav.url }}</span>
+						<a class="saved-recipe-url" ng-href="{{ fav.url }}" target="_blank">{{ fav.url }}</a>
+						<span class="saved-recipe-meta">
+							{{ fav.ingredient_count }}
+							ingredient{{ fav.ingredient_count === 1 ? '' : 's' }}
+						</span>
+					</div>
+					<button class="button" ng-click="loadFavorite(fav)">Load</button>
+					<button class="button secondary" ng-click="removeFavorite(fav)">Remove</button>
+				</li>
+			</ul>
+		</section>
+
+		<section class="account-section">
+			<h5>Kitchen inventory</h5>
+			<div class="callout alert" ng-show="invError">{{ invError }}</div>
+
+			<div class="ingredient-row">
+				<select ng-model="newInv.ingredient_id">
+					<option value="">Choose an ingredient…</option>
+					<option ng-repeat="ing in dbIngredients track by ing.id" value="{{ ing.id }}">
+						{{ ing.name }} ({{ ing.ingredient_type }})
+					</option>
+				</select>
+				<input type="text" ng-model="newInv.quantity" placeholder="Qty" />
+				<input type="text" ng-model="newInv.unit" placeholder="Unit" />
+				<button class="button" ng-click="addInventory()">Add</button>
+			</div>
+
+			<p ng-hide="inventory.length">Nothing in your inventory yet.</p>
+			<ul class="db-ingredient-list">
+				<li ng-repeat="item in inventory track by item.ingredient_id">
+					<span class="db-ingredient-name">
+						{{ item.quantity }} {{ item.unit }} {{ item.name }}
+					</span>
+					<span class="db-ingredient-type">{{ item.ingredient_type }}</span>
+					<span class="db-ingredient-actions">
+						<a href="" ng-click="removeInventory(item)">Remove</a>
+					</span>
+				</li>
+			</ul>
+		</section>
+	</div>
+</div>

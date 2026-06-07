@@ -16,6 +16,22 @@ export function getParsedRecipes(): Promise<App.ParsedRecipeRow[]> {
 }
 
 /**
+ * Ensure a parsed_recipes row exists for a url (creating it if needed) and
+ * return its id. Used when favoriting a recipe that hasn't been fully saved.
+ */
+export function getOrCreateRecipeByUrl(
+  url: string,
+  title: string | null
+): Promise<string> {
+  return query<{ id: string }>(
+    "INSERT INTO parsed_recipes (url, title) VALUES ($1, $2) " +
+      "ON CONFLICT (url) DO UPDATE SET " +
+      "title = COALESCE(EXCLUDED.title, parsed_recipes.title) RETURNING id",
+    [url, title]
+  ).then((rows) => rows[0].id);
+}
+
+/**
  * Look up the given ingredient ids so their types can be validated before a
  * recipe is saved. Returns only the rows that actually exist.
  */

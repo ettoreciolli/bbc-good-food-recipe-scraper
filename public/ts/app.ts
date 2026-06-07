@@ -17,6 +17,10 @@
           templateUrl: "partials/browse.html",
           controller: "browseController",
         })
+        .when("/account", {
+          templateUrl: "partials/account.html",
+          controller: "accountController",
+        })
         .when("/about", {
           template: "<h1>About</h1>",
         })
