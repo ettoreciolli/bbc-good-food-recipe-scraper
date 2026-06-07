@@ -114,4 +114,9 @@ declare namespace App {
     recipe_id: string;
     saved: number;
   }
+
+  /** Response for GET /api/recipes. */
+  interface ListRecipesResponse {
+    recipes: ParsedRecipeRow[];
+  }
 }

@@ -1,5 +1,9 @@
 import express, { Request, Response, NextFunction } from "express";
-import { getIngredientsByIds, saveParsedRecipe } from "../../db/recipes";
+import {
+  getParsedRecipes,
+  getIngredientsByIds,
+  saveParsedRecipe,
+} from "../../db/recipes";
 import { isUnitValidForType } from "../../lib/parseMeasurement";
 
 const router = express();
@@ -8,6 +12,18 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
   next();
+});
+
+/** List saved recipes (newest first) for the browse view. */
+router.get("/", (req: Request, res: Response) => {
+  getParsedRecipes()
+    .then((recipes) => {
+      res.send({ recipes: recipes });
+    })
+    .catch((err) => {
+      console.error("Failed to load recipes:", err);
+      res.status(500).send({ error: "Failed to load recipes" });
+    });
 });
 
 /**

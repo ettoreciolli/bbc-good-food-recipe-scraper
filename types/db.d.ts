@@ -25,4 +25,13 @@ declare namespace App {
     ingredient_type: IngredientType;
     slug: string;
   }
+
+  /** A saved recipe row with its ingredient count, for the browse view. */
+  interface ParsedRecipeRow {
+    id: string;
+    url: string;
+    title: string | null;
+    created_at: string;
+    ingredient_count: number;
+  }
 }

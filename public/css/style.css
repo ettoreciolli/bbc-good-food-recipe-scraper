@@ -227,6 +227,43 @@ p.close {
   margin-right: 8px;
 }
 
+/* Browse (saved recipes) tab. */
+.saved-recipe-list {
+  list-style: none;
+  margin-left: 0;
+}
+.saved-recipe-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+.saved-recipe-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.saved-recipe-title {
+  font-weight: 600;
+}
+.saved-recipe-url {
+  font-size: 0.75rem;
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.saved-recipe-meta {
+  font-size: 0.75rem;
+  color: #777;
+}
+.saved-recipe-list .button {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 #footer {
   position: fixed;
   background-color: #384d76;

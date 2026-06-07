@@ -1,6 +1,21 @@
 import { query } from "./index";
 
 /**
+ * List saved recipes, newest first, with a count of their ingredient rows, for
+ * the browse view.
+ */
+export function getParsedRecipes(): Promise<App.ParsedRecipeRow[]> {
+  return query<App.ParsedRecipeRow>(
+    "SELECT pr.id, pr.url, pr.title, pr.created_at, " +
+      "COUNT(ri.id)::int AS ingredient_count " +
+      "FROM parsed_recipes pr " +
+      "LEFT JOIN recipe_ingredients ri ON ri.recipe_id = pr.id " +
+      "GROUP BY pr.id " +
+      "ORDER BY pr.created_at DESC"
+  );
+}
+
+/**
  * Look up the given ingredient ids so their types can be validated before a
  * recipe is saved. Returns only the rows that actually exist.
  */

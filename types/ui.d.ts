@@ -9,6 +9,19 @@ declare namespace App {
   interface RecipeStore {
     getRecipe(): Recipe | null;
     setRecipe(recipe: Recipe | null): void;
+    /** Stash a url for the home view to scrape (used by the browse view). */
+    setPendingUrl(url: string | null): void;
+    /** Return and clear the pending url, if any. */
+    takePendingUrl(): string | null;
+  }
+
+  /** Scope used by the browse (saved recipes) controller. */
+  interface BrowseScope extends angular.IScope {
+    recipes: ParsedRecipeRow[];
+    loading: boolean;
+    loadError: string | null;
+    loadRecipes(): void;
+    loadRecipe(recipe: ParsedRecipeRow): void;
   }
 
   // --- Recipe ingredient display model -------------------------------------

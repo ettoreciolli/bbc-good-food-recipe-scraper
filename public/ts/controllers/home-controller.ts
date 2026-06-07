@@ -111,13 +111,6 @@
         $scope.saveMessage = null;
       }
 
-      // Restore a previously scraped recipe (e.g. after visiting the
-      // ingredients tab and coming back) from the shared store.
-      var existing = recipeStore.getRecipe();
-      if (existing) {
-        applyRecipe(existing);
-      }
-
       $scope.getRecipe = function () {
         if (!$scope.recipe) {
           console.log("no input");
@@ -148,6 +141,20 @@
           $scope.recipe.url = "";
         }
       };
+
+      // A url handed over from the browse view takes priority: scrape it.
+      // Otherwise restore a previously scraped recipe (e.g. after visiting the
+      // ingredients tab and coming back) from the shared store.
+      var pendingUrl = recipeStore.takePendingUrl();
+      if (pendingUrl) {
+        $scope.recipe = { url: pendingUrl };
+        $scope.getRecipe();
+      } else {
+        var existing = recipeStore.getRecipe();
+        if (existing) {
+          applyRecipe(existing);
+        }
+      }
 
       // Clicking a recognised (underlined) ingredient jumps to the ingredients
       // tab with that ingredient pinned to the top of the list.
