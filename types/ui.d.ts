@@ -20,6 +20,8 @@ declare namespace App {
   interface IngredientPart {
     text: string;
     matched: boolean;
+    /** DB id of the matched ingredient (present when matched). */
+    id?: string;
   }
 
   /** One "and"-split segment of an ingredient line. */
@@ -52,6 +54,8 @@ declare namespace App {
 
     getRecipe(): void;
     closeError(): void;
+    /** Open the ingredients tab focused on a matched ingredient. */
+    openIngredient(part: IngredientPart): void;
   }
 
   /** Scope used by the ingredients (manage) controller. */
@@ -72,6 +76,8 @@ declare namespace App {
 
     // Existing ingredients from the database.
     dbIngredients: IngredientRow[];
+    /** Id of the ingredient to pin to the top / highlight, if any. */
+    highlightId: string | null;
     loadError: string | null;
     loading: boolean;
     loadDb(): void;

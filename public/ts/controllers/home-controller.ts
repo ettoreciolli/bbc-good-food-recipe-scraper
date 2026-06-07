@@ -53,7 +53,7 @@
         if (before) {
           parts.push({ text: before, matched: false });
         }
-        parts.push({ text: mid || segmentText, matched: true });
+        parts.push({ text: mid || segmentText, matched: true, id: match.id });
         if (after) {
           parts.push({ text: after, matched: false });
         }
@@ -67,10 +67,12 @@
   angular.module("app").controller("homeController", [
     "$scope",
     "$http",
+    "$location",
     "recipeStore",
     function (
       $scope: App.HomeScope,
       $http: angular.IHttpService,
+      $location: angular.ILocationService,
       recipeStore: App.RecipeStore
     ) {
       // Restore a previously scraped recipe (e.g. after visiting the
@@ -111,6 +113,15 @@
         if ($scope.recipe) {
           $scope.recipe.url = "";
         }
+      };
+
+      // Clicking a recognised (underlined) ingredient jumps to the ingredients
+      // tab with that ingredient pinned to the top of the list.
+      $scope.openIngredient = function (part: App.IngredientPart) {
+        if (!part.matched || !part.id) {
+          return;
+        }
+        $location.path("/ingredients").search({ ingredient: part.id });
       };
     },
   ]);

@@ -46,7 +46,8 @@
 		</p>
 
 		<ul class="db-ingredient-list" ng-hide="loading">
-			<li ng-repeat="ing in dbIngredients track by ing.id">
+			<li ng-repeat="ing in dbIngredients track by ing.id"
+				ng-class="{ highlighted: ing.id === highlightId }">
 				<span class="db-ingredient-name">{{ ing.name }}</span>
 				<span class="db-ingredient-type">{{ ing.ingredient_type }}</span>
 				<span class="db-ingredient-actions">

@@ -43,14 +43,19 @@
   angular.module("app").controller("ingredientsController", [
     "$scope",
     "$http",
+    "$routeParams",
     "recipeStore",
     function (
       $scope: App.IngredientsScope,
       $http: angular.IHttpService,
+      $routeParams: { ingredient?: string },
       recipeStore: App.RecipeStore
     ) {
       $scope.recipe = recipeStore.getRecipe();
       $scope.notFoundSegments = notFoundSegments($scope.recipe);
+
+      // When arrived at via a click on a recognised ingredient, this is its id.
+      var focusId: string | null = $routeParams.ingredient || null;
 
       // --- Add new ingredients ------------------------------------------
       $scope.addError = null;
@@ -146,8 +151,26 @@
 
       // --- Existing ingredients from the database -----------------------
       $scope.dbIngredients = [];
+      $scope.highlightId = focusId;
       $scope.loadError = null;
       $scope.loading = false;
+
+      // Move the focused ingredient (if any) to the top of the list.
+      function pinFocused(ingredients: App.IngredientRow[]): App.IngredientRow[] {
+        if (!focusId) {
+          return ingredients;
+        }
+        var focused = ingredients.filter(function (ing) {
+          return ing.id === focusId;
+        });
+        if (!focused.length) {
+          return ingredients;
+        }
+        var rest = ingredients.filter(function (ing) {
+          return ing.id !== focusId;
+        });
+        return focused.concat(rest);
+      }
 
       $scope.loadDb = function () {
         $scope.loading = true;
@@ -161,7 +184,7 @@
               $scope.loadError = data.error;
               return;
             }
-            $scope.dbIngredients = data.ingredients || [];
+            $scope.dbIngredients = pinFocused(data.ingredients || []);
           },
           function () {
             $scope.loading = false;

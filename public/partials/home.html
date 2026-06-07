@@ -25,7 +25,8 @@
 					<li ng-repeat="line in ingredientDisplay track by line.index"><span
 						ng-repeat="seg in line.segments track by $index"><span
 							ng-repeat="part in seg.parts track by $index"
-							ng-class="{ 'matched-ingredient': part.matched }">{{ part.text }}</span><span
+							ng-class="{ 'matched-ingredient': part.matched }"
+							ng-click="openIngredient(part)">{{ part.text }}</span><span
 							class="segment-flag"
 							ng-show="!seg.matched"
 							title="Ingredient not recognised">!</span><span ng-show="!$last"> and </span></span></li>
