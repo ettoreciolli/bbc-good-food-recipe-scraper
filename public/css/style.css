@@ -158,6 +158,23 @@ p.close {
 .db-ingredient-actions a {
   margin-left: 10px;
 }
+.db-ingredient-actions a.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+.db-ingredient-edit-name {
+  flex: 1 1 auto;
+  margin: 0;
+}
+.db-ingredient-edit-type {
+  flex: 0 0 110px;
+  margin: 0;
+}
+.db-ingredient-edit-error {
+  flex: 1 1 100%;
+  color: #cc4b37;
+  font-size: 0.8rem;
+}
 
 .ingredient-modal-overlay {
   position: fixed;

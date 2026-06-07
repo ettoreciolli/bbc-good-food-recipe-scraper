@@ -77,6 +77,17 @@ declare namespace App {
     ingredients: IngredientRow[];
   }
 
+  /** Body for PUT /api/ingredients/:id. */
+  interface UpdateIngredientBody {
+    name: string;
+    type: IngredientType;
+  }
+
+  /** Response for PUT /api/ingredients/:id. */
+  interface UpdateIngredientResponse {
+    updated: SavedIngredient;
+  }
+
   /** Response for DELETE /api/ingredients/:id. */
   interface DeleteIngredientResponse {
     deleted: string;

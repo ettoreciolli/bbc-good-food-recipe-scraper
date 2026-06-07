@@ -48,6 +48,22 @@ export function addIngredients(
 }
 
 /**
+ * Update an ingredient's name and type (the slug is re-derived from the name).
+ * Resolves with the updated row, or null when no ingredient with that id exists.
+ */
+export function updateIngredient(
+  id: string,
+  name: string,
+  type: App.IngredientType
+): Promise<App.SavedIngredient | null> {
+  return query<App.SavedIngredient>(
+    "UPDATE ingredient SET name = $1, ingredient_type = $2, slug = $3 " +
+      "WHERE id = $4 RETURNING id, name, ingredient_type, slug",
+    [name, type, slugify(name), id]
+  ).then((rows) => rows[0] || null);
+}
+
+/**
  * Delete a single ingredient by id. Resolves true when a row was actually
  * removed, false when no ingredient with that id existed.
  */

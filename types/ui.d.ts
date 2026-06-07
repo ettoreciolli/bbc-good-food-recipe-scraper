@@ -95,6 +95,16 @@ declare namespace App {
     loadDb(): void;
     removeDbIngredient(ing: IngredientRow): void;
 
+    // Inline editing of a saved ingredient.
+    editId: string | null;
+    editName: string;
+    editType: IngredientType;
+    editError: string | null;
+    editSaving: boolean;
+    beginEdit(ing: IngredientRow): void;
+    cancelEdit(): void;
+    saveEdit(): void;
+
     // Splitting a saved ingredient into several.
     splitTarget: IngredientRow | null;
     splitRows: IngredientFormRow[];

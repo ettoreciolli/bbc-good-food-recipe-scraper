@@ -55,12 +55,31 @@
 		<ul class="db-ingredient-list" ng-hide="loading">
 			<li ng-repeat="ing in dbIngredients | filter:{ name: dbSearch } track by ing.id"
 				ng-class="{ highlighted: ing.id === highlightId }">
-				<span class="db-ingredient-name">{{ ing.name }}</span>
-				<span class="db-ingredient-type">{{ ing.ingredient_type }}</span>
-				<span class="db-ingredient-actions">
+				<!-- Display mode -->
+				<span class="db-ingredient-name" ng-hide="editId === ing.id">{{ ing.name }}</span>
+				<span class="db-ingredient-type" ng-hide="editId === ing.id">{{ ing.ingredient_type }}</span>
+				<span class="db-ingredient-actions" ng-hide="editId === ing.id">
+					<a href="" ng-click="beginEdit(ing)">Edit</a>
 					<a href="" ng-click="beginSplit(ing)">Split</a>
 					<a href="" ng-click="removeDbIngredient(ing)">Delete</a>
 				</span>
+				<!-- Edit mode -->
+				<input type="text" class="db-ingredient-edit-name"
+					ng-show="editId === ing.id" ng-model="editName"
+					placeholder="Ingredient name" />
+				<select class="db-ingredient-edit-type"
+					ng-show="editId === ing.id" ng-model="editType">
+					<option value="solid">Solid</option>
+					<option value="liquid">Liquid</option>
+				</select>
+				<span class="db-ingredient-actions" ng-show="editId === ing.id">
+					<a href="" ng-click="saveEdit()" ng-class="{ disabled: editSaving }">
+						{{ editSaving ? 'Saving…' : 'Save' }}
+					</a>
+					<a href="" ng-click="cancelEdit()">Cancel</a>
+				</span>
+				<span class="db-ingredient-edit-error"
+					ng-show="editId === ing.id && editError">{{ editError }}</span>
 			</li>
 		</ul>
 	</section>

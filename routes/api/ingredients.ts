@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import {
   getIngredients,
   addIngredients,
+  updateIngredient,
   deleteIngredient,
 } from "../../db/ingredients";
 
@@ -78,6 +79,41 @@ router.post("/", (req: Request, res: Response) => {
  * Delete a single ingredient by id (used when splitting a saved ingredient
  * into several, where the original is replaced by the new ones).
  */
+/**
+ * Update an ingredient's name and type.
+ * Expects a JSON body: { name: string, type: "liquid" | "solid" }
+ */
+router.put("/:id", (req: Request, res: Response) => {
+  const id = req.params.id;
+  const body = (req.body || {}) as Partial<App.UpdateIngredientBody>;
+  const name = (body.name || "").trim();
+  const type = body.type as App.IngredientType;
+
+  if (!name) {
+    res.status(400).send({ error: "An ingredient name is required" });
+    return;
+  }
+  if (!VALID_TYPES[type]) {
+    res
+      .status(400)
+      .send({ error: "Ingredient type must be 'liquid' or 'solid'" });
+    return;
+  }
+
+  updateIngredient(id, name, type)
+    .then((updated) => {
+      if (!updated) {
+        res.status(404).send({ error: "Ingredient not found" });
+        return;
+      }
+      res.send({ updated: updated });
+    })
+    .catch((err) => {
+      console.error("Failed to update ingredient:", err);
+      res.status(500).send({ error: "Failed to update ingredient" });
+    });
+});
+
 router.delete("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   deleteIngredient(id)

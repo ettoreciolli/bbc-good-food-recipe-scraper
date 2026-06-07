@@ -206,6 +206,69 @@
         );
       };
 
+      // --- Edit a saved ingredient inline ------------------------------
+      $scope.editId = null;
+      $scope.editName = "";
+      $scope.editType = "solid";
+      $scope.editError = null;
+      $scope.editSaving = false;
+
+      $scope.beginEdit = function (ing: App.IngredientRow) {
+        $scope.editId = ing.id;
+        $scope.editName = ing.name;
+        $scope.editType = ing.ingredient_type;
+        $scope.editError = null;
+      };
+
+      $scope.cancelEdit = function () {
+        $scope.editId = null;
+        $scope.editError = null;
+      };
+
+      $scope.saveEdit = function () {
+        var id = $scope.editId;
+        if (!id) {
+          return;
+        }
+        var name = ($scope.editName || "").trim();
+        if (!name) {
+          $scope.editError = "Please enter an ingredient name.";
+          return;
+        }
+
+        $scope.editSaving = true;
+        $scope.editError = null;
+
+        var body: App.UpdateIngredientBody = { name: name, type: $scope.editType };
+
+        $http.put("/api/ingredients/" + encodeURIComponent(id), body).then(
+          function (response) {
+            $scope.editSaving = false;
+            var data = response.data as App.UpdateIngredientResponse &
+              App.ErrorResponse;
+            if (data.error) {
+              $scope.editError = data.error;
+              return;
+            }
+            // Reflect the change in the loaded list without a full reload.
+            $scope.dbIngredients = $scope.dbIngredients.map(function (row) {
+              return row.id === data.updated.id
+                ? {
+                    id: data.updated.id,
+                    name: data.updated.name,
+                    ingredient_type: data.updated.ingredient_type,
+                  }
+                : row;
+            });
+            $scope.editId = null;
+          },
+          function () {
+            $scope.editSaving = false;
+            $scope.editError = "Something went wrong updating the ingredient.";
+          }
+        );
+      };
+
       // --- Split a saved ingredient into several ------------------------
       $scope.splitTarget = null;
       $scope.splitRows = [];
