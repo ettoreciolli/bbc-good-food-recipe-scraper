@@ -76,6 +76,8 @@ declare namespace App {
 
     // Existing ingredients from the database.
     dbIngredients: IngredientRow[];
+    /** Free-text filter for the database ingredient list. */
+    dbSearch?: string;
     /** Id of the ingredient to pin to the top / highlight, if any. */
     highlightId: string | null;
     loadError: string | null;

@@ -39,6 +39,13 @@
 	<!-- Existing ingredients -->
 	<section class="ingredients-section">
 		<h5>In the database</h5>
+
+		<label class="ingredient-search-label" for="ingredient-search">
+			Search through our database of ingredients
+		</label>
+		<input id="ingredient-search" type="text" class="ingredient-search"
+			ng-model="dbSearch" placeholder="Start typing an ingredient…" />
+
 		<div class="callout alert" ng-show="loadError">{{ loadError }}</div>
 		<p ng-show="loading">Loading…</p>
 		<p ng-hide="loading || dbIngredients.length || loadError">
@@ -46,7 +53,7 @@
 		</p>
 
 		<ul class="db-ingredient-list" ng-hide="loading">
-			<li ng-repeat="ing in dbIngredients track by ing.id"
+			<li ng-repeat="ing in dbIngredients | filter:{ name: dbSearch } track by ing.id"
 				ng-class="{ highlighted: ing.id === highlightId }">
 				<span class="db-ingredient-name">{{ ing.name }}</span>
 				<span class="db-ingredient-type">{{ ing.ingredient_type }}</span>

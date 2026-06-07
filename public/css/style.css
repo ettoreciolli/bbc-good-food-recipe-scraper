@@ -96,6 +96,17 @@ p.close {
 .ingredients-section {
   margin-bottom: 2rem;
 }
+.ingredient-search-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.ingredient-search {
+  font-size: 1.25rem;
+  padding: 0.9rem 1rem;
+  height: auto;
+  margin-bottom: 1rem;
+}
 .ingredients-actions {
   margin-top: 12px;
 }
