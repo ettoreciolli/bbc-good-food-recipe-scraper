@@ -1,14 +1,36 @@
 import express, { Request, Response, NextFunction } from "express";
-import { addIngredients } from "../../db/ingredients";
+import {
+  getIngredients,
+  addIngredients,
+  deleteIngredient,
+} from "../../db/ingredients";
 
 const router = express();
 
 const VALID_TYPES: { [key: string]: boolean } = { liquid: true, solid: true };
 
-router.all("/", (req: Request, res: Response, next: NextFunction) => {
+// CORS for every ingredient route (including /:id), not just "/".
+router.use((req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, Content-Type"
+  );
   next();
+});
+
+/**
+ * List every ingredient in the table so the UI can show/manage them.
+ */
+router.get("/", (req: Request, res: Response) => {
+  getIngredients()
+    .then((ingredients) => {
+      res.send({ ingredients: ingredients });
+    })
+    .catch((err) => {
+      console.error("Failed to load ingredients:", err);
+      res.status(500).send({ error: "Failed to load ingredients" });
+    });
 });
 
 /**
@@ -49,6 +71,26 @@ router.post("/", (req: Request, res: Response) => {
     .catch((err) => {
       console.error("Failed to save ingredients:", err);
       res.status(500).send({ error: "Failed to save ingredients" });
+    });
+});
+
+/**
+ * Delete a single ingredient by id (used when splitting a saved ingredient
+ * into several, where the original is replaced by the new ones).
+ */
+router.delete("/:id", (req: Request, res: Response) => {
+  const id = req.params.id;
+  deleteIngredient(id)
+    .then((deleted) => {
+      if (!deleted) {
+        res.status(404).send({ error: "Ingredient not found" });
+        return;
+      }
+      res.send({ deleted: id });
+    })
+    .catch((err) => {
+      console.error("Failed to delete ingredient:", err);
+      res.status(500).send({ error: "Failed to delete ingredient" });
     });
 });
 

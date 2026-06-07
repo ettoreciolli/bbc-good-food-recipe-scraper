@@ -46,3 +46,14 @@ export function addIngredients(
 
   return query<App.SavedIngredient>(sql, values);
 }
+
+/**
+ * Delete a single ingredient by id. Resolves true when a row was actually
+ * removed, false when no ingredient with that id existed.
+ */
+export function deleteIngredient(id: string): Promise<boolean> {
+  return query<{ id: string }>(
+    "DELETE FROM ingredient WHERE id = $1 RETURNING id",
+    [id]
+  ).then((rows) => rows.length > 0);
+}

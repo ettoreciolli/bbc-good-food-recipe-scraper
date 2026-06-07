@@ -9,6 +9,10 @@
           templateUrl: "partials/home.html",
           controller: "homeController",
         })
+        .when("/ingredients", {
+          templateUrl: "partials/ingredients.html",
+          controller: "ingredientsController",
+        })
         .when("/about", {
           template: "<h1>About</h1>",
         })

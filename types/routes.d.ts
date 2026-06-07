@@ -71,4 +71,14 @@ declare namespace App {
   interface AddIngredientsResponse {
     saved: SavedIngredient[];
   }
+
+  /** Response for GET /api/ingredients. */
+  interface ListIngredientsResponse {
+    ingredients: IngredientRow[];
+  }
+
+  /** Response for DELETE /api/ingredients/:id. */
+  interface DeleteIngredientResponse {
+    deleted: string;
+  }
 }

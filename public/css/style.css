@@ -56,6 +56,77 @@ p.close {
   color: #cc4b37;
 }
 
+/* Recognised ingredient words within a recipe line. */
+.matched-ingredient {
+  text-decoration: underline;
+  text-decoration-color: #3adb76;
+  text-decoration-thickness: 2px;
+}
+.ingredient-key {
+  font-size: 0.75rem;
+  color: #777;
+  margin-bottom: 0.4rem;
+}
+/* Red "!" shown next to an "and"-segment that matched no known ingredient. */
+.segment-flag {
+  color: #cc4b37;
+  font-weight: 700;
+  margin-left: 4px;
+  cursor: default;
+}
+
+/* Tab navigation. */
+.app-tabs {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+}
+.app-tabs a {
+  display: inline-block;
+  padding: 8px 16px;
+  color: #384d76;
+  font-weight: 600;
+}
+.app-tabs a:hover {
+  background: #f3f4f7;
+}
+
+/* Ingredients tab. */
+.ingredients-section {
+  margin-bottom: 2rem;
+}
+.ingredients-actions {
+  margin-top: 12px;
+}
+.ingredients-actions .button {
+  margin-right: 8px;
+}
+.db-ingredient-list {
+  list-style: none;
+  margin-left: 0;
+}
+.db-ingredient-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+.db-ingredient-name {
+  flex: 1 1 auto;
+}
+.db-ingredient-type {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  color: #777;
+  text-transform: uppercase;
+}
+.db-ingredient-actions {
+  flex: 0 0 auto;
+}
+.db-ingredient-actions a {
+  margin-left: 10px;
+}
+
 .ingredient-modal-overlay {
   position: fixed;
   top: 0;
@@ -94,6 +165,10 @@ p.close {
 }
 .ingredient-row select {
   flex: 0 0 110px;
+  margin: 0;
+}
+.ingredient-row .button {
+  flex: 0 0 auto;
   margin: 0;
 }
 .ingredient-modal-actions {
